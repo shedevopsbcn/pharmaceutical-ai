@@ -8,7 +8,7 @@ app.secret_key = 'your-secret-key'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'flask_users'
+app.config['MYSQL_DB'] = 'ia_farmacia'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
@@ -19,20 +19,26 @@ def home():
 
 # Login handler
 @app.route("/", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form['username']
+        # The HTML form uses 'email', not 'username'
+        username = request.form['email']
         pwd = request.form['password']
         cur = mysql.connection.cursor()
-        cur.execute("SELECT username, password FROM tbl_ubers WHERE username = %s", [username])
+        cur.execute("SELECT correu_electronic, contrasenya FROM users WHERE correu_electronic = %s", [username])
         user = cur.fetchone()
         cur.close()
-        if user and pwd == user['password']:
-            session['username'] = user['username']
+        
+        if user and pwd == user['contrasenya']:
+            session['username'] = user['correu_electronic']
             return redirect(url_for('home'))
         else:
-            return render_template("components/register.html", error="Invalid username or password")
-    return render_template("components/register.html")
+            # If login fails, reload the signin page
+            return render_template("components/signin.html", error="Invalid username or password")
+            
+    # Load the signin page by default instead of the register page
+    return render_template("components/signin.html")
 # Start the Flask app
 
 @app.route('/signin')
