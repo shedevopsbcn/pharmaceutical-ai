@@ -46,8 +46,9 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="caducitat">Data de caducitat</label>
-                        <input type="text" id="caducitat" name="caducitat" required />
+                    <label for="caducitat">Data de caducitat</label>
+                    <!-- We've explicitly added the min and max attributes to try and force the calendar -->
+                    <input type="date" id="caducitat" name="caducitat" min="2020-01-01" max="2050-12-31" required />
                     </div>
                     
                     <div class="form-group">

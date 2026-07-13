@@ -117,6 +117,39 @@ def search_medicine():
             return jsonify({"error": "Failed to fetch data from CIMA"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+    # 1. Route to load the new Symptom Checker webpage
+@app.route('/symptomchecker')
+def symptom_checker():
+    return render_template('components/symptomchecker.html')
+
+# 2. Route to handle the API search
+@app.route('/api-symptom-search', methods=['POST'])
+def api_symptom_search():
+    symptom = request.form.get('symptom')
+    cima_url = "https://cima.aemps.es/cima/rest/buscarEnFichaTecnica"
+    
+    # This is the exact JSON structure CIMA requires to search documents[cite: 1]
+    # We are searching Section 4.1 (Therapeutic Indications) for the symptom[cite: 1]
+    payload = [
+        {
+            "seccion": "4.1",
+            "texto": symptom,
+            "contiene": 1
+        }
+    ]
+    
+    try:
+        # Note: This endpoint requires a POST request, not a GET request[cite: 1]
+        response = requests.post(cima_url, json=payload)
+        
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({"error": "Failed to fetch data from CIMA"}), 500
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # This MUST be the very last thing in your file
 if __name__ == "__main__":
