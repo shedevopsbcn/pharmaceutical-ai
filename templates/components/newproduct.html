@@ -18,21 +18,16 @@
         <div style="margin-top: 60px;">
             <h3>Completa aquí</h3>
             
-            <!-- Added an ID to the form and a proper action/method -->
             <form class="form-container" id="new-product-form" action="/submit" method="POST">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="id_numero">Número (ID)</label>
+                        <label for="id_numero">Número (ID intern)</label>
                         <input type="text" id="id_numero" name="id_numero" required />
                     </div>
                     
-                    <!-- Modified this group to include a CIMA Search Button -->
                     <div class="form-group">
                         <label for="nom_producte">Nom del Producte</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="nom_producte" name="nom_producte" style="flex-grow: 1;" required />
-                            <button type="button" id="search-cima-btn" style="padding: 0 15px; border-radius: 5px; background-color: #28a745; color: white; border: none; cursor: pointer;">Cerca a CIMA</button>
-                        </div>
+                        <input type="text" id="nom_producte" name="nom_producte" required />
                     </div>
                     
                     <div class="form-group">
@@ -65,6 +60,8 @@
                         <select id="category" name="category">
                             <option selected disabled>Selecciona aquí</option>
                             <option value="cap">Cap</option>
+                            <option value="tronc">Tronc</option>
+                            <option value="brac">Braç</option>
                             <option value="peu">Peu</option>
                             <option value="intestins">Intestins</option>
                         </select>
@@ -75,7 +72,6 @@
                     <button type="submit">Afegeix</button>
                 </div>
             </form>
-
         </div>
       </div>
     </div>
@@ -83,49 +79,6 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
     lucide.createIcons();
-
-    // JavaScript to handle the CIMA API Search
-    document.getElementById('search-cima-btn').addEventListener('click', async function() {
-        const searchName = document.getElementById('nom_producte').value;
-        const btn = document.getElementById('search-cima-btn');
-        
-        if (!searchName) {
-            alert("Si us plau, introdueix el nom del producte primer.");
-            return;
-        }
-
-        // Change button text to show it is loading
-        const originalText = btn.innerText;
-        btn.innerText = "Cercant...";
-        
-        const formData = new FormData();
-        formData.append('med-name', searchName);
-
-        try {
-            const response = await fetch('/search-medicine', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const data = await response.json();
-            
-            // AUTOFILL LOGIC
-            if (data.resultados && data.resultados.length > 0) {
-                // Get the first medicine result from the list
-                const firstMedicine = data.resultados[0];
-                
-                // Set the ID field to the Registration Number
-                document.getElementById('id_numero').value = firstMedicine.nregistro;
-                
-            } else {
-                alert("No s'ha trobat cap medicament amb aquest nom.");
-            }
-
-        } catch (error) {
-            alert("Error: No s'ha pogut connectar amb el servidor.");
-        } finally {
-            // Reset button text back to normal
-            btn.innerText = originalText;
-        }
-    });
 </script>
+</body>
+</html>

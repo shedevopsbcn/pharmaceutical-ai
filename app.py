@@ -70,6 +70,38 @@ def transaction():
 def promotion():
     return render_template('components/promotionpage.html', active_page='promotion')
 
+@app.route('/submit', methods=['POST'])
+def submit_product():
+    if request.method == 'POST':
+        # 1. Grab data from the HTML form
+        id_numero = request.form['id_numero']
+        nom_producte = request.form['nom_producte']
+        quantitat = request.form['quantitat']
+        milligrams = request.form['milligrams']
+        preu = request.form['preu']
+        caducitat = request.form['caducitat']
+        proveedor = request.form['proveedor']
+        category = request.form.get('category') 
+
+        cur = mysql.connection.cursor()
+
+        # 2. MATCH THE EXACT DATABASE COLUMNS
+        # id, nom, quantitat, miligrams, preu, data_caducitat, proveedor, categories
+        query = """INSERT INTO productes 
+                   (id, nom, quantitat, miligrams, preu, data_caducitat, proveedor, categories) 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+        
+        values = (id_numero, nom_producte, quantitat, milligrams, preu, caducitat, proveedor, category)
+
+        try:
+            cur.execute(query, values)
+            mysql.connection.commit()
+            cur.close()
+            return redirect(url_for('newproduct')) 
+            
+        except Exception as e:
+            return f"Hi ha hagut un error en guardar a la base de dades: {str(e)}"
+        
 # Move this route UP here!
 @app.route('/search-medicine', methods=['POST'])
 def search_medicine():
