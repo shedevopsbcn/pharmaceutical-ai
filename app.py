@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, request, jsonify
 from flask_mysqldb import MySQL
+import requests
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = 'your-secret-key'
@@ -69,5 +70,22 @@ def transaction():
 def promotion():
     return render_template('components/promotionpage.html', active_page='promotion')
 
+# Move this route UP here!
+@app.route('/search-medicine', methods=['POST'])
+def search_medicine():
+    search_term = request.form.get('med-name')
+    cima_url = f"https://cima.aemps.es/cima/rest/medicamentos?nombre={search_term}"
+    
+    try:
+        response = requests.get(cima_url)
+        if response.status_code == 200:
+            data = response.json()
+            return jsonify(data)
+        else:
+            return jsonify({"error": "Failed to fetch data from CIMA"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# This MUST be the very last thing in your file
 if __name__ == "__main__":
     app.run(debug=True)

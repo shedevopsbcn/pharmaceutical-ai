@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/newproduct.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <form action="http://localhost:5000/submit" method="post"></form>
     <style>
         body { font-family: Arial, sans-serif; }
     </style>
@@ -18,36 +17,49 @@
         {% include 'components/header.html' %}
         <div style="margin-top: 60px;">
             <h3>Completa aquí</h3>
-            <form class="form-container">
+            
+            <!-- Added an ID to the form and a proper action/method -->
+            <form class="form-container" id="new-product-form" action="/submit" method="POST">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="nom">Número (ID)</label>
-                        <input type="ID" id="nom" name="nom" required />
+                        <label for="id_numero">Número (ID)</label>
+                        <input type="text" id="id_numero" name="id_numero" required />
                     </div>
+                    
+                    <!-- Modified this group to include a CIMA Search Button -->
                     <div class="form-group">
-                        <label for="nom">Nom del Producte</label>
-                        <input type="text" id="cognom" name="cognom" required />
+                        <label for="nom_producte">Nom del Producte</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="nom_producte" name="nom_producte" style="flex-grow: 1;" required />
+                            <button type="button" id="search-cima-btn" style="padding: 0 15px; border-radius: 5px; background-color: #28a745; color: white; border: none; cursor: pointer;">Cerca a CIMA</button>
+                        </div>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="1uantitat">Quantitat</label>
-                        <input type="text" id="farmacia" name="farmacia" required />
+                        <label for="quantitat">Quantitat</label>
+                        <input type="text" id="quantitat" name="quantitat" required />
                     </div>
+                    
                     <div class="form-group">
-                        <label for="mil•ligrams">Mil•ligrams</label>
-                        <input type="text" id="ubicacio" name="ubicacio" required />
+                        <label for="milligrams">Mil·ligrams</label>
+                        <input type="text" id="milligrams" name="milligrams" required />
                     </div>
+                    
                     <div class="form-group">
-                        <label for="preu per unitat">Preu per unitat</label>
-                        <input type="text" id="email" name="email" required />
+                        <label for="preu">Preu per unitat</label>
+                        <input type="text" id="preu" name="preu" required />
                     </div>
+                    
                     <div class="form-group">
-                        <label for="data de caducitat">Data de caducitat</label>
-                        <input type="text" id="password" name="password" required />
+                        <label for="caducitat">Data de caducitat</label>
+                        <input type="text" id="caducitat" name="caducitat" required />
                     </div>
+                    
                     <div class="form-group">
-                        <label for="nom de proveedor">Nom de Proveedor</label>
-                        <input type="text" id="password" name="password" required />
+                        <label for="proveedor">Nom de Proveedor</label>
+                        <input type="text" id="proveedor" name="proveedor" required />
                     </div>
+                    
                     <div class="form-group">
                         <label for="category">Categories</label>
                         <select id="category" name="category">
@@ -63,13 +75,57 @@
                     <button type="submit">Afegeix</button>
                 </div>
             </form>
+
         </div>
+      </div>
     </div>
-        
-    </div>
-</body>
+
+<script src="https://unpkg.com/lucide@latest"></script>
 <script>
-  lucide.createIcons();
+    lucide.createIcons();
+
+    // JavaScript to handle the CIMA API Search
+    document.getElementById('search-cima-btn').addEventListener('click', async function() {
+        const searchName = document.getElementById('nom_producte').value;
+        const btn = document.getElementById('search-cima-btn');
+        
+        if (!searchName) {
+            alert("Si us plau, introdueix el nom del producte primer.");
+            return;
+        }
+
+        // Change button text to show it is loading
+        const originalText = btn.innerText;
+        btn.innerText = "Cercant...";
+        
+        const formData = new FormData();
+        formData.append('med-name', searchName);
+
+        try {
+            const response = await fetch('/search-medicine', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            // AUTOFILL LOGIC
+            if (data.resultados && data.resultados.length > 0) {
+                // Get the first medicine result from the list
+                const firstMedicine = data.resultados[0];
+                
+                // Set the ID field to the Registration Number
+                document.getElementById('id_numero').value = firstMedicine.nregistro;
+                
+            } else {
+                alert("No s'ha trobat cap medicament amb aquest nom.");
+            }
+
+        } catch (error) {
+            alert("Error: No s'ha pogut connectar amb el servidor.");
+        } finally {
+            // Reset button text back to normal
+            btn.innerText = originalText;
+        }
+    });
 </script>
-    
-    

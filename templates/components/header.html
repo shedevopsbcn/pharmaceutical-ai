@@ -10,8 +10,11 @@
     <div class="options">
         <i data-lucide="message-square-text"></i>
         <i data-lucide="bell"></i>
-        <button>
-            + Nou Producte
-        </button>
+        <!-- We wrapped the button in the link here -->
+        <a href="{{ url_for('newproduct') }}">
+            <button type="button">
+                + Nou Producte
+            </button>
+        </a>
     </div>
 </div>
