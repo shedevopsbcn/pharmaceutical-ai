@@ -20,9 +20,20 @@
               Tauler de control
             </a>
         </li>
-        <li
-            class="sidebar-list-item"
-        ><i data-lucide="chart-column"></i><a href="#">Anàlisi</a></li>
+        
+        <!-- NEW AI ASSISTANT LINK ADDED HERE -->
+        <li class="sidebar-list-item {% if active_page == 'symptomchecker' %}active{% endif %}">
+            <a href="{{ url_for('symptom_checker') }}">
+              <i data-lucide="stethoscope"></i>
+              Assistent IA
+            </a>
+        </li>
+        <!-- END OF NEW LINK -->
+
+        <li class="sidebar-list-item">
+            <i data-lucide="chart-column"></i><a href="#">Anàlisi</a>
+        </li>
+        
         <li class="sidebar-list-item {% if active_page == 'transaction' %}active{% endif %}">
             <a href="{{ url_for('transaction') }}">
               <i data-lucide="file-text"></i>
@@ -36,31 +47,35 @@
               Caducitat
             </a>
         </li>
-        <li
-            class="sidebar-list-item"
-        ><i data-lucide="shopping-bag"></i><a href="#">Proveïdors</a></li>
-        <li
-            class="sidebar-list-item"
-        ><i data-lucide="banknote-arrow-up"></i><a href="#">Ingressos</a></li>
+        
+        <li class="sidebar-list-item">
+            <i data-lucide="shopping-bag"></i><a href="#">Proveïdors</a>
+        </li>
+        
+        <li class="sidebar-list-item">
+            <i data-lucide="banknote-arrow-up"></i><a href="#">Ingressos</a>
+        </li>
+        
         <li class="sidebar-list-item {% if active_page == 'promotion' %}active{% endif %}">
             <a href="{{ url_for('promotion') }}">
               <i data-lucide="file-text"></i>
               Caducitat
             </a>
         </li>
-        <li
-            class="sidebar-list-item"
-        ><i data-lucide="settings"></i><a href="#">Configuració</a></li>
+        
+        <li class="sidebar-list-item">
+            <i data-lucide="settings"></i><a href="#">Configuració</a>
+        </li>
     </ul>
 
     <hr>
 
     <ul class="sidebar-list">
-        <li
-            class="sidebar-list-item"
-        ><i data-lucide="log-out"></i><a href="#">Tancar la sessió</a></li>
-        <li
-            class="sidebar-list-item"
-        ><i data-lucide="circle-question-mark"></i><a href="#">Ajuda</a></li>
+        <li class="sidebar-list-item">
+            <i data-lucide="log-out"></i><a href="#">Tancar la sessió</a>
+        </li>
+        <li class="sidebar-list-item">
+            <i data-lucide="circle-question-mark"></i><a href="#">Ajuda</a>
+        </li>
     </ul>
 </nav>
