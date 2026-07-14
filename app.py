@@ -121,7 +121,8 @@ def search_medicine():
     # 1. Route to load the new Symptom Checker webpage
 @app.route('/symptomchecker')
 def symptom_checker():
-    return render_template('components/symptomchecker.html')
+    # Added active_page='symptomchecker' so the sidebar highlights correctly
+    return render_template('components/symptomchecker.html', active_page='symptomchecker')
 
 # 2. Route to handle the API search
 @app.route('/api-symptom-search', methods=['POST'])

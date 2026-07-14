@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <title>Symptom Checker - IA FARMACIA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', Arial, sans-serif; }
+        
+        .symptom-container {
+            max-width: 800px;
+            margin: 80px auto;
+            text-align: center;
+        }
+
+        .symptom-search-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            margin-bottom: 40px;
+        }
+
+        .symptom-search-box input {
+            flex-grow: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .symptom-search-box input:focus {
+            border-color: #2b6cb0; /* Matches your dashboard blue */
+        }
+
+        .symptom-search-box button {
+            padding: 0 30px;
+            font-size: 16px;
+            background-color: #2b6cb0; 
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .symptom-search-box button:hover {
+            background-color: #1a4971;
+        }
+
+        /* The Grid for the Results Cards */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            text-align: left;
+        }
+
+        .med-card {
+            background: white;
+            border: 1px solid #eaeaea;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .med-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .med-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .med-card p {
+            margin: 0;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .med-card .lab {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+      {% include 'components/sidebar.html' %}
+      <div class="main-content">
+        {% include 'components/header.html' %}
+        
+        <div class="symptom-container">
+            <h2>Assistent d'IA</h2>
+            <p style="color: #666;">Introdueix un símptoma (ex: dolor de cabeza, fiebre) per trobar medicaments recomanats a la base de dades CIMA.</p>
+            
+            <div class="symptom-search-box">
+                <!-- Search Input -->
+                <input type="text" id="symptom-input" placeholder="Escriu el símptoma aquí..." autocomplete="off">
+                <!-- Submit Button -->
+                <button id="search-btn">Cerca</button>
+            </div>
+
+            <!-- Loading Message -->
+            <div id="loading-message" style="display: none; color: #2b6cb0; font-weight: 500; margin-bottom: 20px;">
+                Cercant els millors resultats a CIMA...
+            </div>
+
+            <!-- This is where the JS will place the cards -->
+            <div class="results-grid" id="results-container"></div>
+        </div>
+        
+      </div>
+    </div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    lucide.createIcons();
+
+    // Listen for the button click
+    document.getElementById('search-btn').addEventListener('click', performSearch);
+
+    // Also listen for the 'Enter' key so they don't have to click the button
+    document.getElementById('symptom-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+
+    async function performSearch() {
+        const symptom = document.getElementById('symptom-input').value.trim();
+        const resultsContainer = document.getElementById('results-container');
+        const loadingMessage = document.getElementById('loading-message');
+        const btn = document.getElementById('search-btn');
+
+        if (!symptom) {
+            alert("Si us plau, introdueix un símptoma.");
+            return;
+        }
+
+        // Clear the screen and show the loading text
+        resultsContainer.innerHTML = "";
+        loadingMessage.style.display = "block";
+        btn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('symptom', symptom);
+
+        try {
+            const response = await fetch('/api-symptom-search', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            // Turn off loading text
+            loadingMessage.style.display = "none";
+            btn.disabled = false;
+
+            if (data.resultados && data.resultados.length > 0) {
+                // Limit to top 12 results so it doesn't freeze the screen with hundreds of cards
+                const topResults = data.resultados.slice(0, 12);
+                
+                // Build a card for each medication
+                topResults.forEach(med => {
+                    const card = document.createElement('div');
+                    card.className = 'med-card';
+                    card.innerHTML = `
+                        <h4>${med.nombre}</h4>
+                        <p><strong>Nº Registre:</strong> ${med.nregistro}</p>
+                        <div class="lab">${med.labtitular || 'Laboratori desconegut'}</div>
+                    `;
+                    resultsContainer.appendChild(card);
+                });
+            } else {
+                resultsContainer.innerHTML = "<p style='grid-column: 1 / -1; color: #666;'>No s'han trobat medicaments per a aquest símptoma.</p>";
+            }
+
+        } catch (error) {
+            loadingMessage.style.display = "none";
+            btn.disabled = false;
+            resultsContainer.innerHTML = "<p style='grid-column: 1 / -1; color: red;'>Error de connexió amb l'API.</p>";
+        }
+    }
+</script>
+</body>
+</html>
