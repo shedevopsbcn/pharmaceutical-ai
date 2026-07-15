@@ -18,76 +18,29 @@
             <tr>
               <th>Número (ID)</th>
               <th>Nom</th>
-              <th>Qtat.</th>
+              <th>Qtat. Restant</th>
               <th>Preu</th>
               <th>Data de compra</th>
             </tr>
           </thead>
           <tbody>
+            {% for t in transactions %}
             <tr>
-              <td>56389293</td>
-              <td><div class="content">
-                <div>Paracetamol</div>
-                <div class="subtext">500 mg</div></td>
-              <td>6</td>
-              <td>EUR 5,99</td>
-              <td>30/08/2024</td>
+              <td>{{ t.producte_id }}</td>
+              <td>
+                <div>{{ t.nom }}</div>
+              </td>
+              <td>{{ t.quantitat_restant }}</td>
+              <td>EUR {{ "%.2f"|format(t.preu) }}</td>
+              <td>{{ t.data_compra.strftime('%d/%m/%Y') }}</td>
             </tr>
-            <tr>
-                <td>56389293</td>
-                <td><div class="content">
-                    <div>Paracetamol</div>
-                    <div class="subtext">500 mg</div></td>
-                <td>6</td>
-                <td>EUR 5,99</td>
-                <td>30/08/2024</td>
-            </tr>
-            <tr>
-                <td>56389293</td>
-                <td><div class="content">
-                    <div>Paracetamol</div>
-                    <div class="subtext">500 mg</div></td>
-                <td>6</td>
-                <td>EUR 5,99</td>
-                <td>30/08/2024</td>
-            </tr>
-            <tr>
-                <td>56389293</td>
-                <td><div class="content">
-                  <div>Paracetamol</div>
-                  <div class="subtext">500 mg</div></td>
-                <td>6</td>
-                <td>EUR 5,99</td>
-                <td>30/08/2024</td>
-            </tr>
-            <tr>
-                <td>56389293</td>
-                <td><div class="content">
-                  <div>Paracetamol</div>
-                  <div class="subtext">500 mg</div></td>
-                <td>6</td>
-                <td>EUR 5,99</td>
-                <td>30/08/2024</td>
-            </tr>
-            <tr>
-                <td>56389293</td>
-                <td><div class="content">
-                  <div>Paracetamol</div>
-                  <div class="subtext">500 mg</div></td>
-                <td>6</td>
-                <td>EUR 5,99</td>
-                <td>30/08/2024</td>
-            </tr>
-
-            
-
+            {% endfor %}
           </tbody>
         </table>
       </section>
       <div class="button-bar">
         <button class="more-button">mes >>></button>
-    </div>
+      </div>
     </main>
-  </div>
 </body>
 </html>

@@ -64,7 +64,11 @@ def expiration():
 
 @app.route('/transaction')
 def transaction():
-    return render_template('transactionindex.html', active_page='transaction')
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
+    transactions = cur.fetchall()
+    cur.close()
+    return render_template('transactionindex.html', active_page='transaction', transactions=transactions)
 
 @app.route('/promotion')
 def promotion():
