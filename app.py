@@ -156,6 +156,58 @@ def api_symptom_search():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/chat-symptom', methods=['POST'])
+def chat_symptom():
+    data = request.get_json()
+    history = data.get('history', [])
+    
+    system_prompt = """Ets un assistent de farmàcia virtual que parla en català. 
+    El teu objectiu és fer preguntes per entendre els símptomes de l'usuari i recomanar medicaments.
+    
+    Segueix aquestes regles:
+    1. Sempre parla en català
+    2. Fes preguntes de seguiment per entendre millor els símptomes (màxim 3-4 preguntes)
+    3. Quan tinguis prou informació, afegeix al final de la teva resposta exactament aquesta etiqueta:
+       [SEARCH:terme_de_cerca]
+       On terme_de_cerca és la paraula clau en castellà per buscar a CIMA (ex: [SEARCH:dolor cabeza])
+    4. Sigues empàtic i professional
+    5. No diagnostiques malalties, només recomanis medicaments"""
+
+    messages = [{"role": m["role"], "content": m["content"]} for m in history]
+
+    try:
+        response = requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": "YOUR_API_KEY_HERE",
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            },
+            json={
+                "model": "claude-sonnet-4-6",
+                "max_tokens": 500,
+                "system": system_prompt,
+                "messages": messages
+            }
+        )
+
+        result = response.json()
+        reply = result['content'][0]['text']
+
+        # Check if Claude included a search term
+        search_term = None
+        if '[SEARCH:' in reply:
+            start = reply.index('[SEARCH:') + 8
+            end = reply.index(']', start)
+            search_term = reply[start:end]
+            # Remove the tag from the visible reply
+            reply = reply[:reply.index('[SEARCH:')].strip()
+
+        return jsonify({ 'reply': reply, 'search_term': search_term })
+
+    except Exception as e:
+        return jsonify({ 'reply': 'Hi ha hagut un error. Torna-ho a intentar.', 'search_term': None })
+
 # This MUST be the very last thing in your file
 if __name__ == "__main__":
     app.run(debug=True)

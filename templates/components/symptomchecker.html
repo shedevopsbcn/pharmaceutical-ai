@@ -2,177 +2,365 @@
 <html lang="ca">
 <head>
     <meta charset="UTF-8">
-    <title>Symptom Checker - IA FARMACIA</title>
+    <title>Assistent IA - IA FARMACIA</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', Arial, sans-serif; }
-        
-        .symptom-container {
+
+        .chat-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 80px);
             max-width: 800px;
-            margin: 80px auto;
-            text-align: center;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .symptom-search-box {
+        .chat-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .chat-header p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .message-bubble {
+            background: #2b6cb0;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-input-area {
             display: flex;
             gap: 10px;
-            margin-top: 30px;
-            margin-bottom: 40px;
         }
 
-        .symptom-search-box input {
-            flex-grow: 1;
-            padding: 15px 20px;
-            font-size: 16px;
+        .chat-input-area input {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 14px;
             border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            border-radius: 25px;
             outline: none;
+            font-family: 'Poppins', sans-serif;
             transition: border-color 0.3s;
         }
 
-        .symptom-search-box input:focus {
-            border-color: #2b6cb0; /* Matches your dashboard blue */
+        .chat-input-area input:focus {
+            border-color: #2b6cb0;
         }
 
-        .symptom-search-box button {
-            padding: 0 30px;
-            font-size: 16px;
-            background-color: #2b6cb0; 
+        .chat-input-area button {
+            padding: 14px 24px;
+            background: #2b6cb0;
             color: white;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
+            border-radius: 25px;
+            font-size: 14px;
             font-weight: 500;
-            transition: background-color 0.3s;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: background 0.3s;
         }
 
-        .symptom-search-box button:hover {
-            background-color: #1a4971;
+        .chat-input-area button:hover {
+            background: #1a4971;
         }
 
-        /* The Grid for the Results Cards */
+        .chat-input-area button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        /* Results section */
+        .results-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .results-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            text-align: left;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
         }
 
         .med-card {
             background: white;
             border: 1px solid #eaeaea;
             border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             transition: transform 0.2s;
         }
 
         .med-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         }
 
         .med-card h4 {
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
             color: #333;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         .med-card p {
             margin: 0;
             color: #666;
-            font-size: 13px;
-        }
-        
-        .med-card .lab {
-            margin-top: 15px;
             font-size: 12px;
+        }
+
+        .med-card .lab {
+            margin-top: 10px;
+            font-size: 11px;
             color: #999;
             font-style: italic;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+        }
+
+        .typing-indicator .message-bubble {
+            background: white;
+            border: 1px solid #e0e0e0;
+            color: #999;
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .new-chat-btn {
+            background: none;
+            border: 1px solid #2b6cb0;
+            color: #2b6cb0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .new-chat-btn:hover {
+            background: #2b6cb0;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="main-container">
-      {% include 'components/sidebar.html' %}
-      <div class="main-content">
-        {% include 'components/header.html' %}
-        
-        <div class="symptom-container">
-            <h2>Assistent d'IA</h2>
-            <p style="color: #666;">Introdueix un símptoma (ex: dolor de cabeza, fiebre) per trobar medicaments recomanats a la base de dades CIMA.</p>
-            
-            <div class="symptom-search-box">
-                <!-- Search Input -->
-                <input type="text" id="symptom-input" placeholder="Escriu el símptoma aquí..." autocomplete="off">
-                <!-- Submit Button -->
-                <button id="search-btn">Cerca</button>
+        {% include 'components/sidebar.html' %}
+        <div class="main-content">
+            {% include 'components/header.html' %}
+
+            <div class="chat-wrapper">
+                <div class="chat-header">
+                    <h2>Assistent de Símptomes IA</h2>
+                    <p>Descriu els teus símptomes i t'ajudaré a trobar medicaments recomanats.</p>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Initial bot message -->
+                    <div class="message bot">
+                        <div class="message-bubble">
+                            Hola! Sóc el teu assistent de farmàcia. Descriu-me els teus símptomes i t'ajudaré a trobar els medicaments més adequats. Com et trobes avui?
+                        </div>
+                    </div>
+
+                    <!-- Typing indicator -->
+                    <div class="message typing-indicator" id="typing-indicator">
+                        <div class="message-bubble">Escrivint...</div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" id="user-input" placeholder="Escriu el teu missatge aquí..." autocomplete="off" />
+                    <button id="send-btn">Enviar</button>
+                </div>
+
+                <button class="new-chat-btn" id="new-chat-btn">+ Nova consulta</button>
+
+                <!-- Results section shown after chat concludes -->
+                <div class="results-section" id="results-section">
+                    <h3>Medicaments recomanats</h3>
+                    <div class="results-grid" id="results-grid"></div>
+                </div>
             </div>
 
-            <!-- Loading Message -->
-            <div id="loading-message" style="display: none; color: #2b6cb0; font-weight: 500; margin-bottom: 20px;">
-                Cercant els millors resultats a CIMA...
-            </div>
-
-            <!-- This is where the JS will place the cards -->
-            <div class="results-grid" id="results-container"></div>
         </div>
-        
-      </div>
     </div>
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
     lucide.createIcons();
 
-    // Listen for the button click
-    document.getElementById('search-btn').addEventListener('click', performSearch);
+    // Conversation history kept in memory for this session only
+    let conversationHistory = [];
+    let searchTriggered = false;
 
-    // Also listen for the 'Enter' key so they don't have to click the button
-    document.getElementById('symptom-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            performSearch();
-        }
+    const chatMessages = document.getElementById('chat-messages');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const resultsSection = document.getElementById('results-section');
+    const resultsGrid = document.getElementById('results-grid');
+    const newChatBtn = document.getElementById('new-chat-btn');
+
+    // Send on button click or Enter key
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
     });
 
-    async function performSearch() {
-        const symptom = document.getElementById('symptom-input').value.trim();
-        const resultsContainer = document.getElementById('results-container');
-        const loadingMessage = document.getElementById('loading-message');
-        const btn = document.getElementById('search-btn');
+    // Reset conversation
+    newChatBtn.addEventListener('click', function() {
+        conversationHistory = [];
+        searchTriggered = false;
+        resultsSection.style.display = 'none';
+        resultsGrid.innerHTML = '';
+        chatMessages.innerHTML = `
+            <div class="message bot">
+                <div class="message-bubble">
+                    Hola! Sóc el teu assistent de farmàcia. Descriu-me els teus símptomes i t'ajudaré a trobar els medicaments més adequats. Com et trobes avui?
+                </div>
+            </div>
+            <div class="message typing-indicator" id="typing-indicator">
+                <div class="message-bubble">Escrivint...</div>
+            </div>
+        `;
+    });
 
-        if (!symptom) {
-            alert("Si us plau, introdueix un símptoma.");
-            return;
-        }
+    function appendMessage(role, text) {
+        const typingEl = document.getElementById('typing-indicator');
+        const div = document.createElement('div');
+        div.className = `message ${role}`;
+        div.innerHTML = `<div class="message-bubble">${text}</div>`;
+        chatMessages.insertBefore(div, typingEl);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-        // Clear the screen and show the loading text
-        resultsContainer.innerHTML = "";
-        loadingMessage.style.display = "block";
-        btn.disabled = true;
+    function showTyping() {
+        const typingEl = document.getElementById('typing-indicator');
+        typingEl.style.display = 'flex';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-        const formData = new FormData();
-        formData.append('symptom', symptom);
+    function hideTyping() {
+        const typingEl = document.getElementById('typing-indicator');
+        typingEl.style.display = 'none';
+    }
+
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        // Show user message
+        appendMessage('user', text);
+        conversationHistory.push({ role: 'user', content: text });
+        userInput.value = '';
+        sendBtn.disabled = true;
+        showTyping();
 
         try {
+            const response = await fetch('/chat-symptom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ history: conversationHistory })
+            });
+
+            const data = await response.json();
+            hideTyping();
+
+            // Show bot reply
+            appendMessage('bot', data.reply);
+            conversationHistory.push({ role: 'assistant', content: data.reply });
+
+            // If Claude has enough info, trigger CIMA search
+            if (data.search_term && !searchTriggered) {
+                searchTriggered = true;
+                await searchCIMA(data.search_term);
+            }
+
+        } catch (error) {
+            hideTyping();
+            appendMessage('bot', 'Hi ha hagut un error de connexió. Torna-ho a intentar.');
+        }
+
+        sendBtn.disabled = false;
+        userInput.focus();
+    }
+
+    async function searchCIMA(symptom) {
+        try {
+            const formData = new FormData();
+            formData.append('symptom', symptom);
+
             const response = await fetch('/api-symptom-search', {
                 method: 'POST',
                 body: formData
             });
-            
+
             const data = await response.json();
-            
-            // Turn off loading text
-            loadingMessage.style.display = "none";
-            btn.disabled = false;
 
             if (data.resultados && data.resultados.length > 0) {
-                // Limit to top 12 results so it doesn't freeze the screen with hundreds of cards
-                const topResults = data.resultados.slice(0, 12);
-                
-                // Build a card for each medication
-                topResults.forEach(med => {
+                const top = data.resultados.slice(0, 9);
+                resultsGrid.innerHTML = '';
+                top.forEach(med => {
                     const card = document.createElement('div');
                     card.className = 'med-card';
                     card.innerHTML = `
@@ -180,16 +368,13 @@
                         <p><strong>Nº Registre:</strong> ${med.nregistro}</p>
                         <div class="lab">${med.labtitular || 'Laboratori desconegut'}</div>
                     `;
-                    resultsContainer.appendChild(card);
+                    resultsGrid.appendChild(card);
                 });
-            } else {
-                resultsContainer.innerHTML = "<p style='grid-column: 1 / -1; color: #666;'>No s'han trobat medicaments per a aquest símptoma.</p>";
+                resultsSection.style.display = 'block';
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
             }
-
         } catch (error) {
-            loadingMessage.style.display = "none";
-            btn.disabled = false;
-            resultsContainer.innerHTML = "<p style='grid-column: 1 / -1; color: red;'>Error de connexió amb l'API.</p>";
+            console.error('Error searching CIMA:', error);
         }
     }
 </script>
