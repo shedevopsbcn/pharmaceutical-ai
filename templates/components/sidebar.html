@@ -74,8 +74,11 @@
         <li class="sidebar-list-item">
             <i data-lucide="log-out"></i><a href="#">Tancar la sessió</a>
         </li>
-        <li class="sidebar-list-item">
-            <i data-lucide="circle-question-mark"></i><a href="#">Ajuda</a>
+        <li class="sidebar-list-item {% if active_page == 'ajuda' %}active{% endif %}">
+            <a href="{{ url_for('ajuda') }}">
+              <i data-lucide="circle-help"></i>
+              Ajuda
+            </a>
         </li>
     </ul>
 </nav>

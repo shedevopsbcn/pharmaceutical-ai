@@ -207,6 +207,32 @@ def chat_symptom():
 
     except Exception as e:
         return jsonify({ 'reply': 'Hi ha hagut un error. Torna-ho a intentar.', 'search_term': None })
+    
+@app.route('/ajuda', methods=['GET', 'POST'])
+def ajuda():
+    success = False
+    if request.method == 'POST':
+        nom = request.form['nom']
+        correo = request.form['correo']
+        telefon = request.form.get('telefon', '')
+        missatge = request.form['missatge']
+
+        cur = mysql.connection.cursor()
+        cur.execute("""INSERT INTO missatges (nom, correo, telefon, missatge) 
+                       VALUES (%s, %s, %s, %s)""", (nom, correo, telefon, missatge))
+        mysql.connection.commit()
+        cur.close()
+        success = True
+
+    return render_template('components/contact.html', success=success)
+
+@app.route('/inbox')
+def inbox():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM missatges ORDER BY data_enviament DESC")
+    missatges = cur.fetchall()
+    cur.close()
+    return render_template('inbox.html', missatges=missatges)
 
 # This MUST be the very last thing in your file
 if __name__ == "__main__":
