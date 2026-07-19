@@ -2,16 +2,18 @@
 .sidebar {
     position: sticky;
     top: 0;
-    align-self: flex-start;           /* Needed in flex column layout */
+    align-self: flex-start;
     height: 100vh;
+    overflow-y: auto;
     min-width: 250px;
     width: 250px;
-    padding-top: 30px;
+    padding-top: 15px;
     padding-left: 15px;
     padding-right: 15px;
     background-color: #f9f9f9;
     border-right: 1px solid #d1d1d1;
     font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
 }
 
 /* Top section with logo and title */
@@ -20,15 +22,16 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    height: 100px;
+    height: 70px;
     gap: 10px;
     padding-left: 10px;
+    margin-bottom: 10px;
 }
 
 /* Logo image */
 .sidebar-top-image {
     object-fit: contain;
-    height: 50px; /* Adjust as needed */
+    height: 40px;
 }
 
 /* Navigation list */
@@ -44,8 +47,8 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 15px;
-    padding: 12px 10px;
+    gap: 12px;
+    padding: 9px 10px;
     cursor: pointer;
     transition: background 0.2s ease;
 }
@@ -59,35 +62,35 @@
 .sidebar a {
     text-decoration: none;
     color: #8a8a8a;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 500;
 }
 
 /* Optional: style SVG icons */
 .sidebar-list-item svg {
     stroke-width: 2.5;
+    width: 18px;
+    height: 18px;
 }
 
 .sidebar-list-item.active {
-    background-color: #2962ff; /* Blue background */
+    background-color: #2962ff;
     border-radius: 8px;
 }
 
 .sidebar-list-item.active a {
-    color: white;  /* White text for selected */
+    color: white;
 }
-
 
 /* Divider line */
 hr {
     width: 75%;
-    margin: 0 auto;
+    margin: 8px auto;
     border: none;
     border-top: 1px solid lightgray;
 }
 
 h2 {
     font-weight: 400;
+    font-size: 16px;
 }
-
-
