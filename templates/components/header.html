@@ -7,14 +7,18 @@
         <button type="submit">🔍</button>
         <input type="text" placeholder="cerca aqui" name="search">
     </form>
+    
     <div class="options">
         <i data-lucide="message-square-text"></i>
         <i data-lucide="bell"></i>
-        <!-- We wrapped the button in the link here -->
+        
         <a href="{{ url_for('newproduct') }}">
             <button type="button">
                 + Nou Producte
             </button>
         </a>
+        
+        <!-- Moved inside the options div! -->
+        <a href="{{ url_for('logout') }}" class="logout-btn">Tancar Sessió</a>
     </div>
 </div>

@@ -6,12 +6,11 @@ app = Flask(__name__, static_folder='static')
 app.secret_key = 'your-secret-key'
 
 # MySQL Configuration
-app.config['MYSQL_HOST'] = 'localhost'  
+app.config['MYSQL_HOST'] = '127.0.0.1'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'ia_farmacia'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
@@ -208,6 +207,17 @@ def chat_symptom():
 
     except Exception as e:
         return jsonify({ 'reply': 'Hi ha hagut un error. Torna-ho a intentar.', 'search_term': None })
+    
+
+@app.route("/logout")
+def logout():
+    # This removes the user's email from the active session, officially logging them out
+    session.pop('username', None)
+    
+    # Redirect them back to the login page
+    return redirect(url_for('login'))
+
+
 
 # This MUST be the very last thing in your file
 if __name__ == "__main__":
