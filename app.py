@@ -218,6 +218,20 @@ def logout():
     return redirect(url_for('login'))
 
 
+@app.route('/controltable')
+def controltable():
+    cur = mysql.connection.cursor()
+    # Grab all the items the company added
+    cur.execute("SELECT * FROM productes") 
+    inventory_items = cur.fetchall()
+    cur.close()
+    
+    # Send the data to your HTML file
+    return render_template('ctindex.html', products=inventory_items)
+
+
+
+
 
 # This MUST be the very last thing in your file
 if __name__ == "__main__":
