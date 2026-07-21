@@ -2,89 +2,46 @@
 <html lang="ca">
 <head>
     <meta charset="UTF-8">
-    <title>Assistent IA - IA FARMACIA</title>
+    <title>Symptom Lookup - IA FARMACIA</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', Arial, sans-serif; }
 
-        .chat-wrapper {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 80px);
+        .main-content {
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .lookup-wrapper {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 40px auto;
             padding: 20px;
         }
 
-        .chat-header {
+        .lookup-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
-        .chat-header h2 {
+        .lookup-header h2 {
             margin: 0;
             color: #333;
         }
 
-        .chat-header p {
+        .lookup-header p {
             color: #666;
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: 8px;
         }
 
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding: 20px;
-            background: #f8f8f8;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
-
-        .message {
-            display: flex;
-            flex-direction: column;
-            max-width: 75%;
-        }
-
-        .message.bot {
-            align-self: flex-start;
-        }
-
-        .message.user {
-            align-self: flex-end;
-        }
-
-        .message-bubble {
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .message.bot .message-bubble {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message.user .message-bubble {
-            background: #2b6cb0;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .chat-input-area {
+        .search-bar {
             display: flex;
             gap: 10px;
+            margin-bottom: 30px;
         }
 
-        .chat-input-area input {
+        .search-bar input {
             flex: 1;
             padding: 14px 18px;
             font-size: 14px;
@@ -95,12 +52,12 @@
             transition: border-color 0.3s;
         }
 
-        .chat-input-area input:focus {
+        .search-bar input:focus {
             border-color: #2b6cb0;
         }
 
-        .chat-input-area button {
-            padding: 14px 24px;
+        .search-bar button {
+            padding: 14px 28px;
             background: #2b6cb0;
             color: white;
             border: none;
@@ -112,24 +69,23 @@
             transition: background 0.3s;
         }
 
-        .chat-input-area button:hover {
+        .search-bar button:hover {
             background: #1a4971;
         }
 
-        .chat-input-area button:disabled {
+        .search-bar button:disabled {
             background: #a0aec0;
             cursor: not-allowed;
         }
 
-        /* Results section */
         .results-section {
             display: none;
-            margin-top: 20px;
         }
 
         .results-section h3 {
             color: #333;
             margin-bottom: 15px;
+            font-size: 16px;
         }
 
         .results-grid {
@@ -171,34 +127,17 @@
             font-style: italic;
         }
 
-        .typing-indicator {
-            display: none;
-            align-self: flex-start;
-        }
-
-        .typing-indicator .message-bubble {
-            background: white;
-            border: 1px solid #e0e0e0;
+        .empty-state {
+            text-align: center;
             color: #999;
-            font-style: italic;
-            font-size: 13px;
+            padding: 40px 0;
         }
 
-        .new-chat-btn {
-            background: none;
-            border: 1px solid #2b6cb0;
-            color: #2b6cb0;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-            margin-top: 10px;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .new-chat-btn:hover {
-            background: #2b6cb0;
-            color: white;
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 40px 0;
+            display: none;
         }
     </style>
 </head>
@@ -208,36 +147,23 @@
         <div class="main-content">
             {% include 'components/header.html' %}
 
-            <div class="chat-wrapper">
-                <div class="chat-header">
-                    <h2>Assistent de Símptomes IA</h2>
-                    <p>Descriu els teus símptomes i t'ajudaré a trobar medicaments recomanats.</p>
+            <div class="lookup-wrapper">
+                <div class="lookup-header">
+                    <h2>Symptom Lookup</h2>
+                    <p>Escriu un símptoma per trobar medicaments recomanats de la base de dades CIMA.</p>
                 </div>
 
-                <div class="chat-messages" id="chat-messages">
-                    <!-- Initial bot message -->
-                    <div class="message bot">
-                        <div class="message-bubble">
-                            Hola! Sóc el teu assistent de farmàcia. Descriu-me els teus símptomes i t'ajudaré a trobar els medicaments més adequats. Com et trobes avui?
-                        </div>
-                    </div>
-
-                    <!-- Typing indicator -->
-                    <div class="message typing-indicator" id="typing-indicator">
-                        <div class="message-bubble">Escrivint...</div>
-                    </div>
+                <div class="search-bar">
+                    <input type="text" id="symptom-input" placeholder="Ex: dolor de cap, febre, tos..." autocomplete="off" />
+                    <button id="search-btn">Cercar</button>
                 </div>
 
-                <div class="chat-input-area">
-                    <input type="text" id="user-input" placeholder="Escriu el teu missatge aquí..." autocomplete="off" />
-                    <button id="send-btn">Enviar</button>
+                <div class="loading" id="loading">
+                    Cercant medicaments...
                 </div>
 
-                <button class="new-chat-btn" id="new-chat-btn">+ Nova consulta</button>
-
-                <!-- Results section shown after chat concludes -->
                 <div class="results-section" id="results-section">
-                    <h3>Medicaments recomanats</h3>
+                    <h3 id="results-title"></h3>
                     <div class="results-grid" id="results-grid"></div>
                 </div>
             </div>
@@ -249,103 +175,27 @@
 <script>
     lucide.createIcons();
 
-    // Conversation history kept in memory for this session only
-    let conversationHistory = [];
-    let searchTriggered = false;
-
-    const chatMessages = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const typingIndicator = document.getElementById('typing-indicator');
+    const searchBtn = document.getElementById('search-btn');
+    const symptomInput = document.getElementById('symptom-input');
     const resultsSection = document.getElementById('results-section');
     const resultsGrid = document.getElementById('results-grid');
-    const newChatBtn = document.getElementById('new-chat-btn');
+    const resultsTitle = document.getElementById('results-title');
+    const loading = document.getElementById('loading');
 
-    // Send on button click or Enter key
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendMessage();
+    searchBtn.addEventListener('click', doSearch);
+    symptomInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') doSearch();
     });
 
-    // Reset conversation
-    newChatBtn.addEventListener('click', function() {
-        conversationHistory = [];
-        searchTriggered = false;
+    async function doSearch() {
+        const symptom = symptomInput.value.trim();
+        if (!symptom) return;
+
+        searchBtn.disabled = true;
         resultsSection.style.display = 'none';
+        loading.style.display = 'block';
         resultsGrid.innerHTML = '';
-        chatMessages.innerHTML = `
-            <div class="message bot">
-                <div class="message-bubble">
-                    Hola! Sóc el teu assistent de farmàcia. Descriu-me els teus símptomes i t'ajudaré a trobar els medicaments més adequats. Com et trobes avui?
-                </div>
-            </div>
-            <div class="message typing-indicator" id="typing-indicator">
-                <div class="message-bubble">Escrivint...</div>
-            </div>
-        `;
-    });
 
-    function appendMessage(role, text) {
-        const typingEl = document.getElementById('typing-indicator');
-        const div = document.createElement('div');
-        div.className = `message ${role}`;
-        div.innerHTML = `<div class="message-bubble">${text}</div>`;
-        chatMessages.insertBefore(div, typingEl);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function showTyping() {
-        const typingEl = document.getElementById('typing-indicator');
-        typingEl.style.display = 'flex';
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function hideTyping() {
-        const typingEl = document.getElementById('typing-indicator');
-        typingEl.style.display = 'none';
-    }
-
-    async function sendMessage() {
-        const text = userInput.value.trim();
-        if (!text) return;
-
-        // Show user message
-        appendMessage('user', text);
-        conversationHistory.push({ role: 'user', content: text });
-        userInput.value = '';
-        sendBtn.disabled = true;
-        showTyping();
-
-        try {
-            const response = await fetch('/chat-symptom', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ history: conversationHistory })
-            });
-
-            const data = await response.json();
-            hideTyping();
-
-            // Show bot reply
-            appendMessage('bot', data.reply);
-            conversationHistory.push({ role: 'assistant', content: data.reply });
-
-            // If Claude has enough info, trigger CIMA search
-            if (data.search_term && !searchTriggered) {
-                searchTriggered = true;
-                await searchCIMA(data.search_term);
-            }
-
-        } catch (error) {
-            hideTyping();
-            appendMessage('bot', 'Hi ha hagut un error de connexió. Torna-ho a intentar.');
-        }
-
-        sendBtn.disabled = false;
-        userInput.focus();
-    }
-
-    async function searchCIMA(symptom) {
         try {
             const formData = new FormData();
             formData.append('symptom', symptom);
@@ -356,10 +206,12 @@
             });
 
             const data = await response.json();
+            loading.style.display = 'none';
 
             if (data.resultados && data.resultados.length > 0) {
-                const top = data.resultados.slice(0, 9);
-                resultsGrid.innerHTML = '';
+                const top = data.resultados.slice(0, 12);
+                resultsTitle.textContent = `${top.length} medicaments trobats per "${symptom}"`;
+                
                 top.forEach(med => {
                     const card = document.createElement('div');
                     card.className = 'med-card';
@@ -370,12 +222,22 @@
                     `;
                     resultsGrid.appendChild(card);
                 });
+
                 resultsSection.style.display = 'block';
-                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                resultsTitle.textContent = `No s'han trobat medicaments per "${symptom}"`;
+                resultsGrid.innerHTML = '<div class="empty-state"><p>Prova amb un altre terme de cerca.</p></div>';
+                resultsSection.style.display = 'block';
             }
+
         } catch (error) {
-            console.error('Error searching CIMA:', error);
+            loading.style.display = 'none';
+            resultsTitle.textContent = 'Error de connexió. Torna-ho a intentar.';
+            resultsSection.style.display = 'block';
         }
+
+        searchBtn.disabled = false;
+        symptomInput.focus();
     }
 </script>
 </body>
