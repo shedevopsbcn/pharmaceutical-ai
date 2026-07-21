@@ -15,9 +15,51 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
+def get_notifications():
+    from datetime import date, timedelta
+    cur = mysql.connection.cursor()
+    notifications = []
+    
+    # Check low stock (less than 10 units)
+    cur.execute("SELECT nom, quantitat FROM productes WHERE quantitat < 10")
+    low_stock = cur.fetchall()
+    for item in low_stock:
+        notifications.append({
+            'type': 'stock',
+            'message': f"{item['nom']} té poc estoc: {item['quantitat']} unitats restants"
+        })
+    
+    # Check expiring soon (within 30 days)
+    today = date.today()
+    soon = today + timedelta(days=30)
+    cur.execute("SELECT nom, data_caducitat FROM productes WHERE data_caducitat <= %s AND data_caducitat >= %s", [soon, today])
+    expiring = cur.fetchall()
+    for item in expiring:
+        notifications.append({
+            'type': 'expiration',
+            'message': f"{item['nom']} caduca el {item['data_caducitat'].strftime('%d/%m/%Y')}"
+        })
+    
+    cur.close()
+    return notifications
+
+@app.context_processor
+def inject_notifications():
+    try:
+        notifs = get_notifications()
+    except:
+        notifs = []
+    return dict(notifications=notifs)
+
+@app.route('/notifications')
+def notifications():
+    notifs = get_notifications()
+    return render_template('notifications.html', notifications=notifs)
+
 @app.route("/home")
 def home():
-    return render_template("index.html", active_page='home')
+    notifs = get_notifications()
+    return render_template("index.html", active_page='home', notifications=notifs)
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])

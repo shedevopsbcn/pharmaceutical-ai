@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <title>Notificacions - IA FARMACIA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Poppins', Arial, sans-serif; }
+
+        .notif-wrapper {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .notif-wrapper h2 {
+            margin-bottom: 5px;
+        }
+
+        .notif-wrapper p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .notif-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            border-left: 4px solid #e0e0e0;
+        }
+
+        .notif-card.stock {
+            border-left-color: #e53e3e;
+        }
+
+        .notif-card.expiration {
+            border-left-color: #dd6b20;
+        }
+
+        .notif-icon {
+            font-size: 24px;
+        }
+
+        .notif-message {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .notif-type {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 60px 0;
+        }
+
+        .badge {
+            background: red;
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        {% include 'components/sidebar.html' %}
+        <div class="main-content">
+            {% include 'components/header.html' %}
+
+            <div class="notif-wrapper">
+                <h2>Notificacions 
+                    {% if notifications %}
+                    <span class="badge">{{ notifications|length }}</span>
+                    {% endif %}
+                </h2>
+                <p>Alertes actuals d'estoc baix i caducitats properes.</p>
+
+                {% if notifications %}
+                    {% for n in notifications %}
+                    <div class="notif-card {{ n.type }}">
+                        <div class="notif-icon">
+                            {% if n.type == 'stock' %}📦{% else %}⏰{% endif %}
+                        </div>
+                        <div>
+                            <div class="notif-message">{{ n.message }}</div>
+                            <div class="notif-type">
+                                {% if n.type == 'stock' %}Estoc baix{% else %}Caducitat propera{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>✅ No hi ha notificacions pendents.</p>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+<script>
+    lucide.createIcons();
+</script>
+</body>
+</html>
