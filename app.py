@@ -316,6 +316,24 @@ def supplier_detail(supplier_name):
     cur.close()
     return render_template('components/supplier_detail.html', active_page='suppliers', supplier_name=supplier_name, productes=productes) 
 
+@app.route('/income')
+def income():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+        
+    cur = mysql.connection.cursor()
+    
+    # 1. Calculate total revenue and total sales count
+    cur.execute("SELECT SUM(preu) as total_revenue, COUNT(id) as total_sales FROM transactions")
+    stats = cur.fetchone()
+    
+    # 2. Pull all transaction records for the detailed list
+    cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
+    transactions = cur.fetchall()
+    cur.close()
+    
+    return render_template('components/income.html', active_page='income', stats=stats, transactions=transactions)
+
 @app.route('/inbox')
 def inbox():
     cur = mysql.connection.cursor()
