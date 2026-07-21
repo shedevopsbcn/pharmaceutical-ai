@@ -11,6 +11,7 @@ app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'ia_farmacia'
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
@@ -18,27 +19,26 @@ mysql = MySQL(app)
 def home():
     return render_template("index.html", active_page='home')
 
-# Login handler
 @app.route("/", methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        # The HTML form uses 'email', not 'username'
         username = request.form['email']
         pwd = request.form['password']
         cur = mysql.connection.cursor()
-        cur.execute("SELECT correu_electronic, contrasenya FROM users WHERE correu_electronic = %s", [username])
+        # ADDED plan_tipus to the SELECT statement
+        cur.execute("SELECT correu_electronic, contrasenya, plan_tipus FROM users WHERE correu_electronic = %s", [username])
         user = cur.fetchone()
         cur.close()
         
         if user and pwd == user['contrasenya']:
             session['username'] = user['correu_electronic']
+            # SAVES their plan in the background session
+            session['plan_tipus'] = user.get('plan_tipus', 'Gratuït') 
             return redirect(url_for('home'))
         else:
-            # If login fails, reload the signin page
             return render_template("components/signin.html", error="Invalid username or password")
             
-    # Load the signin page by default instead of the register page
     return render_template("components/signin.html")
 # Start the Flask app
 
@@ -60,19 +60,41 @@ def controltable():
 
 @app.route('/expiration')
 def expiration():
-    return render_template('components/expirationpage.html', active_page='expiration')
+    cur = mysql.connection.cursor()
+    # Pulls all products and sorts them so the closest expiration dates show up first
+    cur.execute("SELECT * FROM productes ORDER BY data_caducitat ASC")
+    productes = cur.fetchall()
+    cur.close()
+    return render_template('components/expirationpage.html', active_page='expiration', productes=productes)
 
 @app.route('/transaction')
 def transaction():
+    # SECURITY: Boot them if not logged in
+    if 'username' not in session:
+        return redirect(url_for('login'))
+        
+    # PAYWALL: Redirect to the pricing plans if they are on the free tier
+    if session.get('plan_tipus') == 'Gratuït':
+        return redirect(url_for('plans'))
+
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
     transactions = cur.fetchall()
     cur.close()
     return render_template('transactionindex.html', active_page='transaction', transactions=transactions)
 
+@app.route('/plans')
+def plans():
+    # This is the page where they will see the 3 tiers and Stripe buttons
+    return render_template('components/plans.html', active_page='plans')
+
 @app.route('/promotion')
 def promotion():
-    return render_template('components/promotionpage.html', active_page='promotion')
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM productes")
+    productes = cur.fetchall()
+    cur.close()
+    return render_template('components/promotionpage.html', active_page='promotion', productes=productes)
 
 @app.route('/submit', methods=['POST'])
 def submit_product():
@@ -238,3 +260,7 @@ def inbox():
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

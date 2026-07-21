@@ -1,107 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Flask App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/expirationpage.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-</head>
-<body>
-    {% include 'components/sidebar.html' %}
-    <div style="display: flex; flex-direction: column; width: 100%">
-      {% include 'components/header.html' %}
-      
-      <!-- Actual expiration page component -->
-      <div class="expiration-page">
-
-        <!-- The actual list of expiring medications -->
-        <table class="expiration-page-list">
-            <thead>
+<tbody>
+                {% for p in productes %}
                 <tr>
-                <th>Categoria</th>
-                <th>Número (ID)</th>
-                <th>Nom</th>
-                <th>Qtat.</th>
-                <th>Data de caducitat</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                <td><img src="../static/images/Cap.png" alt="head" /></td>
-                <td>563896293</td>
+                <td><img src="../static/images/Cap.png" alt="categoria" /></td>
+                <td>{{ p.id }}</td>
                 <td>
-                    <strong>Paracetamol</strong><br />
-                    <small>500 mg</small>
+                    <strong>{{ p.nom }}</strong><br />
+                    <small>{{ p.miligrams }}</small>
                 </td>
-                <td>46</td>
-                <td class="expiry">30/08/2024</td>
+                <td>{{ p.quantitat }}</td>
+                <!-- This pulls the exact expiration date from your database -->
+                <td class="expiry">{{ p.data_caducitat }}</td>
                 </tr>
+                {% else %}
                 <tr>
-                <td><img src="../static/images/Cap.png" alt="head" /></td>
-                <td>163896292</td>
-                <td>
-                    <strong>Amoxicil•lina</strong><br />
-                    <small>375 mg</small>
-                </td>
-                <td>7</td>
-                <td class="expiry">01/09/2024</td>
+                    <td colspan="5" style="text-align: center; padding: 20px;">No hi ha productes a l'inventari.</td>
                 </tr>
-                <tr>
-                <td><img src="../static/images/Intestins.png" alt="head" /></td>
-                <td>2638962935</td>
-                <td>
-                    <strong>Omeprazol</strong><br />
-                    <small>10 mg</small>
-                </td>
-                <td>32</td>
-                <td class="expiry">03/09/2024</td>
-                </tr>
-                <tr>
-                <td><img src="../static/images/Cap.png" alt="head" /></td>
-                <td>46339623</td>
-                <td>
-                    <strong>Loratadina</strong><br />
-                    <small>500 mg</small>
-                </td>
-                <td>46</td>
-                <td class="expiry">09/09/2024</td>
-                </tr>
-                <tr>
-                <td><img src="../static/images/Peu.png" alt="head" /></td>
-                <td>663896292</td>
-                <td>
-                    <strong>Metformina</strong><br />
-                    <small>75 mg</small>
-                </td>
-                <td>11</td>
-                <td class="expiry">11/09/2024</td>
-                </tr>
-                <tr>
-                <td><img src="../static/images/Intestins.png" alt="head" /></td>
-                <td>7638962935</td>
-                <td>
-                    <strong>Cetirizina</strong><br />
-                    <small>50 mg</small>
-                </td>
-                <td>28</td>
-                <td class="expiry">13/09/2024</td>
-                </tr>
+                {% endfor %}
             </tbody>
-        </table>
-
-        <!-- The button on the bottom -->
-        <div class="expiration-page-bottom">
-            <button>
-                Més >>
-            </button>
-        </div>
-      </div>
-    </div>
-    
-</body>
-</html>
-<script>
-  lucide.createIcons();
-</script>

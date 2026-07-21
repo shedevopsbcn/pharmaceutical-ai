@@ -1,114 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Flask App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/promotionpage.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-</head>
-<body>
-    {% include 'components/sidebar.html' %}
-    <div style="display: flex; flex-direction: column; width: 100%">
-      {% include 'components/header.html' %}
-      
-      <!-- Actual promotion page component -->
-      <div class="promotion-page">
-
-        <!-- The actual list of promo medications -->
-        <table class="promotion-page-list">
-            <thead>
+<tbody>
+                {% for p in productes %}
                 <tr>
-                <th>Categoria</th>
-                <th>Número (ID)</th>
-                <th>Nom</th>
-                <th>Qtat.</th>
-                <th>Promocions</th>
-                <th>Preu Final</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                <td><img src="../static/images/Cap.png" alt="head" /></td>
-                <td>563896293</td>
+                <!-- We are defaulting to the Cap image for now, but you can change this later! -->
+                <td><img src="../static/images/Cap.png" alt="categoria" /></td>
+                <td>{{ p.id }}</td>
                 <td>
-                    <strong>Paracetamol</strong><br />
-                    <small>500 mg</small>
+                    <strong>{{ p.nom }}</strong><br />
+                    <small>{{ p.miligrams }}</small>
                 </td>
-                <td>46</td>
-                <td class="expiry">23%</td>
-                <td>EUR 3,99</td>
+                <td>{{ p.quantitat }}</td>
+                <td class="expiry">10%</td> <!-- Placeholder discount -->
+                <td>EUR {{ p.preu }}</td>
                 </tr>
+                {% else %}
                 <tr>
-                <td><img src="../static/images/Cap.png" alt="head" /></td>
-                <td>563896293</td>
-                <td>
-                    <strong>Paracetamol</strong><br />
-                    <small>500 mg</small>
-                </td>
-                <td>46</td>
-                <td class="expiry">23%</td>
-                <td>EUR 3,99</td>
+                    <td colspan="6" style="text-align: center; padding: 20px;">No hi ha productes a l'inventari.</td>
                 </tr>
-                <tr>
-                <td><img src="../static/images/Intestins.png" alt="head" /></td>
-                <td>563896293</td>
-                <td>
-                    <strong>Paracetamol</strong><br />
-                    <small>500 mg</small>
-                </td>
-                <td>46</td>
-                <td class="expiry">23%</td>
-                <td>EUR 3,99</td>
-                </tr>
-                <tr>
-                <td><img src="../static/images/Cap.png" alt="head" /></td>
-                <td>563896293</td>
-                <td>
-                    <strong>Paracetamol</strong><br />
-                    <small>500 mg</small>
-                </td>
-                <td>46</td>
-                <td class="expiry">23%</td>
-                <td>EUR 3,99</td>
-                </tr>
-                <tr>
-                <td><img src="../static/images/Peu.png" alt="head" /></td>
-                <td>563896293</td>
-                <td>
-                    <strong>Paracetamol</strong><br />
-                    <small>500 mg</small>
-                </td>
-                <td>46</td>
-                <td class="expiry">23%</td>
-                <td>EUR 3,99</td>
-                </tr>
-                <tr>
-                <td><img src="../static/images/Intestins.png" alt="head" /></td>
-                <td>563896293</td>
-                <td>
-                    <strong>Paracetamol</strong><br />
-                    <small>500 mg</small>
-                </td>
-                <td>46</td>
-                <td class="expiry">23%</td>
-                <td>EUR 3,99</td>
-                </tr>
+                {% endfor %}
             </tbody>
-        </table>
-
-        <!-- The button on the bottom -->
-        <div class="promotion-page-bottom">
-            <button>
-                Més >>
-            </button>
-        </div>
-      </div>
-    </div>
-    
-</body>
-</html>
-<script>
-  lucide.createIcons();
-</script>

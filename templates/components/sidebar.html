@@ -71,14 +71,17 @@
     <hr>
 
     <ul class="sidebar-list">
+        <!-- Your Log Out Fix -->
         <li class="sidebar-list-item">
-            <i data-lucide="log-out"></i><a href="#">Tancar la sessió</a>
+            <i data-lucide="log-out"></i><a href="{{ url_for('logout') }}">Tancar la sessió</a>
         </li>
+        
+        <!-- Your Coworker's Help Route Fix -->
         <li class="sidebar-list-item {% if active_page == 'ajuda' %}active{% endif %}">
             <a href="{{ url_for('ajuda') }}">
-              <i data-lucide="circle-help"></i>
-              Ajuda
+                <i data-lucide="circle-help"></i> Ajuda
             </a>
         </li>
     </ul>
+    
 </nav>
