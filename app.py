@@ -100,14 +100,13 @@ def newproduct():
 def controltable():
     return render_template('ctindex.html')
 
-@app.route('/expiration')
-def expiration():
+@app.route('/inventory')
+def inventory():
     cur = mysql.connection.cursor()
-    # Pulls all products and sorts them so the closest expiration dates show up first
     cur.execute("SELECT * FROM productes ORDER BY data_caducitat ASC")
     productes = cur.fetchall()
     cur.close()
-    return render_template('components/expirationpage.html', active_page='expiration', productes=productes)
+    return render_template('components/inventory.html', active_page='inventory', productes=productes)
 
 @app.route('/transaction')
 def transaction():
@@ -133,7 +132,8 @@ def plans():
 @app.route('/promotion')
 def promotion():
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM productes")
+    # Pulls ONLY products expiring within the next 90 days!
+    cur.execute("SELECT * FROM productes WHERE data_caducitat <= DATE_ADD(CURDATE(), INTERVAL 90 DAY) ORDER BY data_caducitat ASC")
     productes = cur.fetchall()
     cur.close()
     return render_template('components/promotionpage.html', active_page='promotion', productes=productes)
