@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Suppliers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .provider-page { padding: 40px; width: 100%; }
+        .provider-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .provider-table th, .provider-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        .provider-table th { background-color: #f8f9fa; font-weight: 600; }
+        .provider-table tr:hover { background-color: #f8f9fa; }
+        
+        .badge { background: #e0e7ff; color: #3b82f6; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-right: 10px; display: inline-block;}
+        .badge-green { background: #dcfce7; color: #16a34a; }
+        
+        .btn-view { background: #3a69ff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500; transition: 0.2s;}
+        .btn-view:hover { background: #284ee0; }
+    </style>
+</head>
+<body>
+    {% include 'components/sidebar.html' %}
+    <div style="display: flex; flex-direction: column; width: 100%">
+      {% include 'components/header.html' %}
+      
+      <div class="provider-page">
+        <h2>Els teus Suppliers</h2>
+        
+        <table class="provider-table">
+            <thead>
+                <tr>
+                    <th>Nom del Supplier</th>
+                    <th>Estadístiques Ràpides</th>
+                    <th>Acció</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in suppliers %}
+                <tr>
+                    <td style="font-size: 18px;"><strong>{{ p.proveedor }}</strong></td>
+                    <td>
+                        <span class="badge badge-green">Productes totals: {{ p.total_items }}</span>
+                        <span class="badge">Diferents Medicaments: {{ p.unique_products }}</span>
+                    </td>
+                    <td>
+                        <!-- Points to our new dedicated profile page -->
+                        <a href="{{ url_for('supplier_detail', supplier_name=p.proveedor) }}" class="btn-view">Veure Perfil</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 30px; color: gray;">Encara no hi ha suppliers a la base de dades.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+      </div>
+    </div>
+</body>
+</html>
+<script>lucide.createIcons();</script>

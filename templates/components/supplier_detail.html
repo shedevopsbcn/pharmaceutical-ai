@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Perfil del Supplier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .profile-page { padding: 40px; width: 100%; }
+        .contact-card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .back-link { color: #3a69ff; text-decoration: none; font-weight: 500; margin-bottom: 20px; display: inline-block; }
+        
+        .catalog-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .catalog-table th, .catalog-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .catalog-table th { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    {% include 'components/sidebar.html' %}
+    <div style="display: flex; flex-direction: column; width: 100%">
+      {% include 'components/header.html' %}
+      
+      <div class="profile-page">
+        <a href="{{ url_for('suppliers') }}" class="back-link">← Tornar a Suppliers</a>
+        
+        <!-- Contact Info Header -->
+        <div class="contact-card">
+            <h2 style="margin-top: 0;">{{ supplier_name }}</h2>
+            <p style="color: gray; margin: 5px 0;"><i data-lucide="phone" style="width: 16px; margin-right: 5px;"></i> Contacte no disponible</p>
+            <p style="color: gray; margin: 5px 0;"><i data-lucide="mail" style="width: 16px; margin-right: 5px;"></i> contact@{{ supplier_name | lower | replace(' ', '') }}.com</p>
+        </div>
+
+        <h3>Catàleg de Productes</h3>
+        
+        <!-- Filtered Inventory -->
+        <table class="catalog-table">
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th>Nom</th>
+                    <th>Qtat.</th>
+                    <th>Data de caducitat</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in productes %}
+                <tr>
+                    <td>{{ p.categories }}</td>
+                    <td>
+                        <strong>{{ p.nom }}</strong><br />
+                        <small style="color: gray;">{{ p.miligrams }}</small>
+                    </td>
+                    <td>{{ p.quantitat }}</td>
+                    <td>{{ p.data_caducitat }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+      </div>
+    </div>
+</body>
+</html>
+<script>lucide.createIcons();</script>
