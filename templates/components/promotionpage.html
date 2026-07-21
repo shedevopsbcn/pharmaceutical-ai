@@ -1,7 +1,34 @@
-<tbody>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alertes de Caducitat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/promotionpage.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    {% include 'components/sidebar.html' %}
+    <div style="display: flex; flex-direction: column; width: 100%">
+      {% include 'components/header.html' %}
+      
+      <div class="promotion-page">
+        <!-- Added a nice title so you know exactly what page this is -->
+        <h2 style="padding: 20px 40px 0;">Alertes de Caducitat (Propers 90 dies)</h2>
+        
+        <table class="promotion-page-list">
+            <thead>
+                <tr>
+                <th>Categoria</th>
+                <th>Número (ID)</th>
+                <th>Nom</th>
+                <th>Qtat.</th>
+                <th>Data de caducitat</th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for p in productes %}
                 <tr>
-                <!-- We are defaulting to the Cap image for now, but you can change this later! -->
                 <td><img src="../static/images/Cap.png" alt="categoria" /></td>
                 <td>{{ p.id }}</td>
                 <td>
@@ -9,12 +36,29 @@
                     <small>{{ p.miligrams }}</small>
                 </td>
                 <td>{{ p.quantitat }}</td>
-                <td class="expiry">10%</td> <!-- Placeholder discount -->
-                <td>EUR {{ p.preu }}</td>
+                <!-- Highlights the date in red as an alert -->
+                <td class="expiry" style="color: red; font-weight: bold;">{{ p.data_caducitat }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 20px;">No hi ha productes a l'inventari.</td>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #28a745; font-weight: 500;">
+                        Tot bé! Cap medicament caduca aviat.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
+        </table>
+
+        <div class="promotion-page-bottom">
+            <button>
+                Més >>
+            </button>
+        </div>
+      </div>
+    </div>
+    
+</body>
+</html>
+<script>
+  lucide.createIcons();
+</script>
