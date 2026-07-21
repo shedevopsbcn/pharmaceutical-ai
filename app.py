@@ -74,8 +74,8 @@ def transaction():
         return redirect(url_for('login'))
         
     # PAYWALL: Redirect to the pricing plans if they are on the free tier
-    if session.get('plan_tipus') == 'Gratuït':
-        return redirect(url_for('plans'))
+    #if session.get('plan_tipus') == 'Gratuït':
+        #return redirect(url_for('plans'))
 
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
