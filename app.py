@@ -116,7 +116,7 @@ def transaction():
         
     # PAYWALL: Redirect to the pricing plans if they are on the free tier
     #if session.get('plan_tipus') == 'Gratuït':
-        #return redirect(url_for('plans'))
+       # return redirect(url_for('plans'))
 
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
@@ -289,6 +289,32 @@ def ajuda():
         success = True
 
     return render_template('components/contact.html', success=success)
+
+@app.route('/suppliers')
+def suppliers():
+    cur = mysql.connection.cursor()
+    # Calculates the badges
+    cur.execute("""
+        SELECT proveedor, 
+               SUM(quantitat) as total_items, 
+               COUNT(id) as unique_products 
+        FROM productes 
+        WHERE proveedor IS NOT NULL AND proveedor != ''
+        GROUP BY proveedor
+    """)
+    suppliers_data = cur.fetchall()
+    cur.close()
+    return render_template('components/supplier.html', active_page='suppliers', suppliers=suppliers_data)
+
+# NEW: The dedicated Supplier Profile page
+@app.route('/supplier/<supplier_name>')
+def supplier_detail(supplier_name):
+    cur = mysql.connection.cursor()
+    # Grabs only their products, sorted cleanly by category
+    cur.execute("SELECT * FROM productes WHERE proveedor = %s ORDER BY categories ASC", [supplier_name])
+    productes = cur.fetchall()
+    cur.close()
+    return render_template('components/supplier_detail.html', active_page='suppliers', supplier_name=supplier_name, productes=productes) 
 
 @app.route('/inbox')
 def inbox():

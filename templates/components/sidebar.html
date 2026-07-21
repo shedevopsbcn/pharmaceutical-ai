@@ -48,8 +48,11 @@
             </a>
         </li>
         
-        <li class="sidebar-list-item">
-            <i data-lucide="shopping-bag"></i><a href="#">Proveïdors</a>
+        <li class="sidebar-list-item {% if active_page == 'suppliers' %}active{% endif %}">
+            <a href="{{ url_for('suppliers') }}">
+              <i data-lucide="shopping-bag"></i>
+              Suppliers
+            </a>
         </li>
         
         <li class="sidebar-list-item">
