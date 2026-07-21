@@ -1,4 +1,29 @@
-<tbody>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flask App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/expirationpage.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    {% include 'components/sidebar.html' %}
+    <div style="display: flex; flex-direction: column; width: 100%">
+      {% include 'components/header.html' %}
+      
+      <div class="expiration-page">
+        <table class="expiration-page-list">
+            <thead>
+                <tr>
+                <th>Categoria</th>
+                <th>Número (ID)</th>
+                <th>Nom</th>
+                <th>Qtat.</th>
+                <th>Data de caducitat</th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for p in productes %}
                 <tr>
                 <td><img src="../static/images/Cap.png" alt="categoria" /></td>
@@ -8,7 +33,6 @@
                     <small>{{ p.miligrams }}</small>
                 </td>
                 <td>{{ p.quantitat }}</td>
-                <!-- This pulls the exact expiration date from your database -->
                 <td class="expiry">{{ p.data_caducitat }}</td>
                 </tr>
                 {% else %}
@@ -17,3 +41,18 @@
                 </tr>
                 {% endfor %}
             </tbody>
+        </table>
+
+        <div class="expiration-page-bottom">
+            <button>
+                Més >>
+            </button>
+        </div>
+      </div>
+    </div>
+    
+</body>
+</html>
+<script>
+  lucide.createIcons();
+</script>
