@@ -55,8 +55,11 @@
             </a>
         </li>
         
-        <li class="sidebar-list-item">
-            <i data-lucide="banknote-arrow-up"></i><a href="#">Ingressos</a>
+        <li class="sidebar-list-item {% if active_page == 'income' %}active{% endif %}">
+            <a href="{{ url_for('income') }}">
+              <i data-lucide="banknote"></i>
+              Ingressos
+            </a>
         </li>
         
         <li class="sidebar-list-item {% if active_page == 'promotion' %}active{% endif %}">

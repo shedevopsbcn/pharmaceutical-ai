@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ingressos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .income-page { padding: 40px; width: 100%; }
+        .stats-card { background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; gap: 40px; }
+        .stat-item h3 { margin: 0; color: gray; font-size: 14px; font-weight: 500; }
+        .stat-item p { margin: 5px 0 0; font-size: 28px; font-weight: 700; color: #16a34a; }
+        
+        .income-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .income-table th, .income-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        .income-table th { background-color: #f8f9fa; font-weight: 600; }
+    </style>
+</head>
+<body>
+    {% include 'components/sidebar.html' %}
+    <div style="display: flex; flex-direction: column; width: 100%">
+      {% include 'components/header.html' %}
+      
+      <div class="income-page">
+        <h2>Resum d'Ingressos</h2>
+        
+        <!-- Summary Cards -->
+        <div class="stats-card">
+            <div class="stat-item">
+                <h3>Ingressos Totals</h3>
+                <p>EUR {{ stats.total_revenue if stats.total_revenue else '0.00' }}</p>
+            </div>
+            <div class="stat-item">
+                <h3>Transaccions Totals</h3>
+                <p style="color: #3b82f6;">{{ stats.total_sales if stats.total_sales else '0' }}</p>
+            </div>
+        </div>
+
+        <h3>Historial de Transaccions</h3>
+        
+        <!-- Detailed Transactions Table -->
+        <table class="income-table">
+            <thead>
+                <tr>
+                    <th>ID Transacció</th>
+                    <th>Data</th>
+                    <th>Detalls</th>
+                    <th>Import</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.id }}</td>
+                    <td>{{ t.data_compra }}</td>
+                    <td>{{ t.detalls if 'detalls' in t else 'Venda de producte' }}</td>
+                    <td style="color: #16a34a; font-weight: 600;">+EUR {{ t.preu }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 30px; color: gray;">Encara no hi ha registres d'ingressos.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+      </div>
+    </div>
+</body>
+</html>
+<script>lucide.createIcons();</script>
