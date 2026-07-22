@@ -2,21 +2,42 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
+<!-- Title with functional dropdown -->
 <div class="title">
     <h2>Estadística</h2>
-    <button class="expiration-title-button">Aquest mes ▼</button>
+    <form id="statForm" action="{{ url_for('home') }}" method="GET" style="margin: 0;">
+        <input type="hidden" name="exp_filter" value="{{ exp_filter }}">
+        <select name="stat_filter" onchange="document.getElementById('statForm').submit()" style="border: none; background: transparent; color: gray; font-family: 'Poppins', sans-serif; font-size: 14px; cursor: pointer; outline: none;">
+            <option value="month" {% if stat_filter == 'month' %}selected{% endif %}>Aquest mes ▼</option>
+            <option value="year" {% if stat_filter == 'year' %}selected{% endif %}>Aquest any ▼</option>
+        </select>
+    </form>
 </div>
+
 <div class="content">
     <canvas id="myChart"></canvas>
+</div>
 
-  <script>
+<script>
     const ctx = document.getElementById('myChart').getContext('2d');
+    
+    // Wrap the Jinja variable in quotes so VS Code stops showing red lines
+    const rawLabels = "{{ stat_labels | safe }}";
+    // Convert the text string back into a valid JavaScript array
+    const parsedLabels = JSON.parse(rawLabels.replace(/'/g, '"'));
+
     new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+        labels: parsedLabels,
         datasets: [{
-          data: [10, 20, 15, 30],
+          // Data is wrapped in quotes to prevent VS Code errors
+          data: [
+              '{{ weekly_stats.week1 }}', 
+              '{{ weekly_stats.week2 }}', 
+              '{{ weekly_stats.week3 }}', 
+              '{{ weekly_stats.week4 }}'
+          ],
           backgroundColor: '#1e62a3',
           borderColor: '#1e62a3',
           borderWidth: 2,
@@ -24,17 +45,8 @@
       },
       options: {
         responsive: true,
-        plugins: {
-        legend: {
-                display: false  // ← hide the legend
-            }
-        },  
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
+        plugins: { legend: { display: false } },  
+        scales: { y: { beginAtZero: true } }
       }
     });
 </script>
-</div>

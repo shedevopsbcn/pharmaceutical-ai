@@ -23,21 +23,16 @@
         
         <!-- NEW AI ASSISTANT LINK ADDED HERE -->
         <li class="sidebar-list-item {% if active_page == 'symptomchecker' %}active{% endif %}">
-            <a href="{{ url_for('symptom_checker') }}">
+            <a href="{{ url_for('symptom_checker') }}" class="sidebar-link">
               <i data-lucide="stethoscope"></i>
               Symptom Lookup
             </a>
         </li>
         <!-- END OF NEW LINK -->
 
-        <li class="sidebar-list-item">
-            <i data-lucide="chart-column"></i><a href="#">Anàlisi</a>
-        </li>
-        
-        <li class="sidebar-list-item {% if active_page == 'transaction' %}active{% endif %}">
-            <a href="{{ url_for('transaction') }}">
-              <i data-lucide="file-text"></i>
-              Transacció
+        <li class="sidebar-list-item {% if active_page == 'analysis' %}active{% endif %}">
+            <a href="{{ url_for('analysis') }}" class="sidebar-link">
+                <i data-lucide="bar-chart-2"></i> Analysis
             </a>
         </li>
           

@@ -1,50 +1,39 @@
-<!-- Provides list of expiring medications -->
-<!-- Title -->
+<!-- Title with functional dropdown -->
 <div class="title">
     <h2>Caducitat propera</h2>
-    <button class="expiration-title-button">Tots ▼</button>
+    <form id="expForm" action="{{ url_for('home') }}" method="GET" style="margin: 0;">
+        <!-- This hidden input remembers what the other graph is filtered by -->
+        <input type="hidden" name="stat_filter" value="{{ stat_filter }}">
+        <select name="exp_filter" onchange="document.getElementById('expForm').submit()" style="border: none; background: transparent; color: gray; font-family: 'Poppins', sans-serif; font-size: 14px; cursor: pointer; outline: none;">
+            <option value="all" {% if exp_filter == 'all' %}selected{% endif %}>Tots ▼</option>
+            <option value="month" {% if exp_filter == 'month' %}selected{% endif %}>Aquest mes ▼</option>
+        </select>
+    </form>
 </div>
+
 <!-- Expiring medication list -->
 <div class="content" style="display: flex; gap: 10px; flex-direction: column">
+    {% for product in expiring_products %}
     <div class="expiration-item">
         <div class="expiration-item-text">
             <div style="font-size: 18px">
-                Paracetamol
+                {{ product.nom }}
             </div>
             <div style="font-size: 14px; color: gray">
-                500 mg
+                {{ product.miligrams }}
             </div>
         </div>
         <div class="expiration-item-date">
-            30/08/2024
+            {{ product.data_caducitat }}
         </div>
     </div>
-    <hr>
-    <div class="expiration-item">
-        <div class="expiration-item-text">
-            <div style="font-size: 18px">
-                Amoxicil·lina
-            </div>
-            <div style="font-size: 14px; color: gray">
-                375 mg
-            </div>
-        </div>
-        <div class="expiration-item-date">
-            01/09/2024
-        </div>
-    </div>
-    <hr>
-    <div class="expiration-item">
-        <div class="expiration-item-text">
-            <div style="font-size: 18px">
-                Loratadina
-            </div>
-            <div style="font-size: 14px; color: gray">
-                10 mg
-            </div>
-        </div>
-        <div class="expiration-item-date">
-            03/09/2024
-        </div>
-    </div>
+    
+    <!-- Adds a line between items, but not after the very last item -->
+    {% if not loop.last %}
+    <hr style="width: 100%; border: 0; border-top: 1px solid #eee;">
+    {% endif %}
+    
+    {% else %}
+    <p style="text-align: center; color: gray;">No hi ha productes a punt de caducar.</p>
+    {% endfor %}
 </div>

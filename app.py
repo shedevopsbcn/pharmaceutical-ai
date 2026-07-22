@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, request, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
 import requests
 
@@ -58,8 +58,77 @@ def notifications():
 
 @app.route("/home")
 def home():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+    
+    # 1. Grab the active filters from the dropdowns (defaults to 'all' and 'month')
+    exp_filter = request.args.get('exp_filter', 'all')
+    stat_filter = request.args.get('stat_filter', 'month')
+
+    # Total Revenue & Stock
+    cur.execute("SELECT SUM(preu) as total_revenue FROM transactions")
+    revenue_data = cur.fetchone()
+    total_revenue = revenue_data['total_revenue'] if revenue_data['total_revenue'] else 0
+
+    cur.execute("SELECT SUM(quantitat) as total_stock FROM productes")
+    stock_data = cur.fetchone()
+    total_stock = stock_data['total_stock'] if stock_data['total_stock'] else 0
+
+    # 2. Expiration Filter Logic
+    if exp_filter == 'month':
+        # Show everything expiring in the next 30 days
+        cur.execute("SELECT nom, miligrams, data_caducitat FROM productes WHERE data_caducitat <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND data_caducitat >= CURDATE() ORDER BY data_caducitat ASC")
+    else:
+        # Default: Show the 3 closest expirations
+        cur.execute("SELECT nom, miligrams, data_caducitat FROM productes ORDER BY data_caducitat ASC LIMIT 3")
+    expiring_products = cur.fetchall()
+
+    # 3. Statistics Filter Logic
+    if stat_filter == 'year':
+        # Last 4 Months
+        cur.execute("""
+            SELECT 
+                COALESCE(SUM(CASE WHEN data_compra >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) THEN preu ELSE 0 END), 0) as week4,
+                COALESCE(SUM(CASE WHEN data_compra >= DATE_SUB(CURDATE(), INTERVAL 2 MONTH) AND data_compra < DATE_SUB(CURDATE(), INTERVAL 1 MONTH) THEN preu ELSE 0 END), 0) as week3,
+                COALESCE(SUM(CASE WHEN data_compra >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH) AND data_compra < DATE_SUB(CURDATE(), INTERVAL 2 MONTH) THEN preu ELSE 0 END), 0) as week2,
+                COALESCE(SUM(CASE WHEN data_compra >= DATE_SUB(CURDATE(), INTERVAL 4 MONTH) AND data_compra < DATE_SUB(CURDATE(), INTERVAL 3 MONTH) THEN preu ELSE 0 END), 0) as week1
+        FROM transactions
+        """)
+        stat_labels = "['Mes 1', 'Mes 2', 'Mes 3', 'Mes 4']"
+    else:
+        # Default: Last 4 Weeks
+        cur.execute("""
+            SELECT 
+                COALESCE(SUM(CASE WHEN data_compra >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN preu ELSE 0 END), 0) as week4,
+                COALESCE(SUM(CASE WHEN data_compra >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) AND data_compra < DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN preu ELSE 0 END), 0) as week3,
+                COALESCE(SUM(CASE WHEN data_compra >= DATE_SUB(CURDATE(), INTERVAL 21 DAY) AND data_compra < DATE_SUB(CURDATE(), INTERVAL 14 DAY) THEN preu ELSE 0 END), 0) as week2,
+                COALESCE(SUM(CASE WHEN data_compra >= DATE_SUB(CURDATE(), INTERVAL 28 DAY) AND data_compra < DATE_SUB(CURDATE(), INTERVAL 21 DAY) THEN preu ELSE 0 END), 0) as week1
+            FROM transactions
+        """)
+        stat_labels = "['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4']"
+        
+    weekly_stats = cur.fetchone()
+    cur.close()
+
+    max_weekly = max([weekly_stats['week1'], weekly_stats['week2'], weekly_stats['week3'], weekly_stats['week4']])
+    if max_weekly == 0:
+        max_weekly = 1 
+
     notifs = get_notifications()
-    return render_template("index.html", active_page='home', notifications=notifs)
+    
+    return render_template("index.html", 
+                           active_page='home', 
+                           notifications=notifs, 
+                           total_revenue=total_revenue, 
+                           total_stock=total_stock, 
+                           expiring_products=expiring_products,
+                           weekly_stats=weekly_stats,
+                           max_weekly=max_weekly,
+                           exp_filter=exp_filter,
+                           stat_filter=stat_filter,
+                           stat_labels=stat_labels)
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
@@ -68,21 +137,18 @@ def login():
         username = request.form['email']
         pwd = request.form['password']
         cur = mysql.connection.cursor()
-        # ADDED plan_tipus to the SELECT statement
         cur.execute("SELECT correu_electronic, contrasenya, plan_tipus FROM users WHERE correu_electronic = %s", [username])
         user = cur.fetchone()
         cur.close()
         
         if user and pwd == user['contrasenya']:
             session['username'] = user['correu_electronic']
-            # SAVES their plan in the background session
             session['plan_tipus'] = user.get('plan_tipus', 'Gratuït') 
             return redirect(url_for('home'))
         else:
             return render_template("components/signin.html", error="Invalid username or password")
             
     return render_template("components/signin.html")
-# Start the Flask app
 
 @app.route('/signin')
 def signin():
@@ -110,13 +176,8 @@ def inventory():
 
 @app.route('/transaction')
 def transaction():
-    # SECURITY: Boot them if not logged in
     if 'username' not in session:
         return redirect(url_for('login'))
-        
-    # PAYWALL: Redirect to the pricing plans if they are on the free tier
-    #if session.get('plan_tipus') == 'Gratuït':
-       # return redirect(url_for('plans'))
 
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
@@ -126,13 +187,11 @@ def transaction():
 
 @app.route('/plans')
 def plans():
-    # This is the page where they will see the 3 tiers and Stripe buttons
     return render_template('components/plans.html', active_page='plans')
 
 @app.route('/promotion')
 def promotion():
     cur = mysql.connection.cursor()
-    # Pulls ONLY products expiring within the next 90 days!
     cur.execute("SELECT * FROM productes WHERE data_caducitat <= DATE_ADD(CURDATE(), INTERVAL 90 DAY) ORDER BY data_caducitat ASC")
     productes = cur.fetchall()
     cur.close()
@@ -141,7 +200,6 @@ def promotion():
 @app.route('/submit', methods=['POST'])
 def submit_product():
     if request.method == 'POST':
-        # 1. Grab data from the HTML form
         id_numero = request.form['id_numero']
         nom_producte = request.form['nom_producte']
         quantitat = request.form['quantitat']
@@ -152,13 +210,9 @@ def submit_product():
         category = request.form.get('category') 
 
         cur = mysql.connection.cursor()
-
-        # 2. MATCH THE EXACT DATABASE COLUMNS
-        # id, nom, quantitat, miligrams, preu, data_caducitat, proveedor, categories
         query = """INSERT INTO productes 
                    (id, nom, quantitat, miligrams, preu, data_caducitat, proveedor, categories) 
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-        
         values = (id_numero, nom_producte, quantitat, milligrams, preu, caducitat, proveedor, category)
 
         try:
@@ -170,7 +224,6 @@ def submit_product():
         except Exception as e:
             return f"Hi ha hagut un error en guardar a la base de dades: {str(e)}"
         
-# Move this route UP here!
 @app.route('/search-medicine', methods=['POST'])
 def search_medicine():
     search_term = request.form.get('med-name')
@@ -186,20 +239,15 @@ def search_medicine():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-    # 1. Route to load the new Symptom Checker webpage
 @app.route('/symptomchecker')
 def symptom_checker():
-    # Added active_page='symptomchecker' so the sidebar highlights correctly
     return render_template('components/symptomchecker.html', active_page='symptomchecker')
 
-# 2. Route to handle the API search
 @app.route('/api-symptom-search', methods=['POST'])
 def api_symptom_search():
     symptom = request.form.get('symptom')
     cima_url = "https://cima.aemps.es/cima/rest/buscarEnFichaTecnica"
     
-    # This is the exact JSON structure CIMA requires to search documents[cite: 1]
-    # We are searching Section 4.1 (Therapeutic Indications) for the symptom[cite: 1]
     payload = [
         {
             "seccion": "4.1",
@@ -209,14 +257,11 @@ def api_symptom_search():
     ]
     
     try:
-        # Note: This endpoint requires a POST request, not a GET request[cite: 1]
         response = requests.post(cima_url, json=payload)
-        
         if response.status_code == 200:
             return jsonify(response.json())
         else:
             return jsonify({"error": "Failed to fetch data from CIMA"}), 500
-            
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -258,13 +303,11 @@ def chat_symptom():
         result = response.json()
         reply = result['content'][0]['text']
 
-        # Check if Claude included a search term
         search_term = None
         if '[SEARCH:' in reply:
             start = reply.index('[SEARCH:') + 8
             end = reply.index(']', start)
             search_term = reply[start:end]
-            # Remove the tag from the visible reply
             reply = reply[:reply.index('[SEARCH:')].strip()
 
         return jsonify({ 'reply': reply, 'search_term': search_term })
@@ -293,7 +336,6 @@ def ajuda():
 @app.route('/suppliers')
 def suppliers():
     cur = mysql.connection.cursor()
-    # Calculates the badges
     cur.execute("""
         SELECT proveedor, 
                SUM(quantitat) as total_items, 
@@ -306,49 +348,36 @@ def suppliers():
     cur.close()
     return render_template('components/supplier.html', active_page='suppliers', suppliers=suppliers_data)
 
-# NEW: The dedicated Supplier Profile page
 @app.route('/supplier/<supplier_name>')
 def supplier_detail(supplier_name):
     cur = mysql.connection.cursor()
-    # Grabs only their products, sorted cleanly by category
     cur.execute("SELECT * FROM productes WHERE proveedor = %s ORDER BY categories ASC", [supplier_name])
     productes = cur.fetchall()
     cur.close()
     return render_template('components/supplier_detail.html', active_page='suppliers', supplier_name=supplier_name, productes=productes) 
 
+# RESTORED: Monthly filter logic for the Income page
 @app.route('/income')
 def income():
     if 'username' not in session:
         return redirect(url_for('login'))
         
     cur = mysql.connection.cursor()
-    
-    # Check if a specific month was requested from the dropdown
     selected_month = request.args.get('month')
     
     try:
         if selected_month:
-            # Split 'YYYY-MM' into Year and Month variables
             year, month = selected_month.split('-')
-            
-            # Filter stats for that specific month
             cur.execute("SELECT SUM(preu) as total_revenue, COUNT(id) as total_sales FROM transactions WHERE YEAR(data_compra) = %s AND MONTH(data_compra) = %s", (year, month))
             stats = cur.fetchone()
-            
-            # Filter list for that specific month
             cur.execute("SELECT * FROM transactions WHERE YEAR(data_compra) = %s AND MONTH(data_compra) = %s ORDER BY data_compra DESC", (year, month))
             transactions = cur.fetchall()
-            
         else:
-            # If no month is selected, show ALL-TIME totals
             cur.execute("SELECT SUM(preu) as total_revenue, COUNT(id) as total_sales FROM transactions")
             stats = cur.fetchone()
-            
             cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
             transactions = cur.fetchall()
-            
     except Exception as e:
-        # Failsafe: if something breaks, just load all-time data
         cur.execute("SELECT SUM(preu) as total_revenue, COUNT(id) as total_sales FROM transactions")
         stats = cur.fetchone()
         cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
@@ -356,8 +385,40 @@ def income():
         selected_month = None
         
     cur.close()
-    
     return render_template('components/income.html', active_page='income', stats=stats, transactions=transactions, selected_month=selected_month)
+
+
+@app.route('/analysis')
+def analysis():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        SELECT categories, SUM(quantitat) as total_items 
+        FROM productes 
+        GROUP BY categories
+    """)
+    category_data = cur.fetchall()
+
+    # FIX: Changed %%Y-%%m to %Y-%m so it formats correctly!
+    cur.execute("""
+        SELECT DATE_FORMAT(data_compra, '%Y-%m') as month, SUM(preu) as revenue 
+        FROM transactions 
+        GROUP BY month 
+        ORDER BY month DESC 
+        LIMIT 6
+    """)
+    
+    monthly_revenue = list(cur.fetchall())
+    monthly_revenue.reverse()
+    cur.close()
+
+    return render_template('components/analysis.html', 
+                           active_page='analysis', 
+                           category_data=category_data, 
+                           monthly_revenue=monthly_revenue)
 
 @app.route('/inbox')
 def inbox():

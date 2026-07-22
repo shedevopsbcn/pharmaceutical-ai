@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Anàlisi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="main-container">
+        {% include 'components/sidebar.html' %}
+        <div class="main-content">
+            {% include 'components/header.html' %}
+            
+            <div class="analysis-page">
+                <div class="analysis-header">
+                    <h2>Data Analysis</h2>
+                    <p>Financial performance and inventory breakdown</p>
+                </div>
+                
+                <div class="charts-grid">
+                    <!-- Line Chart: Monthly Revenue -->
+                    <div class="chart-card">
+                        <h3>Monthly Income (Last 6 months)</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+
+                    <!-- Doughnut Chart: Categories -->
+                    <div class="chart-card">
+                        <h3>Inventory by Category</h3>
+                        <div style="position: relative; height: 300px; width: 100%; display: flex; justify-content: center;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Setup Scripts -->
+    <script>
+        // --- REVENUE LINE CHART ---
+        const revCtx = document.getElementById('revenueChart').getContext('2d');
+        
+        // Securely pass the Python data into JavaScript as a JSON string
+        const monthlyData = JSON.parse('{{ monthly_revenue | tojson | safe }}');
+        
+        // Use standard JavaScript to create the arrays (no more red lines!)
+        const revLabels = monthlyData.map(row => row.month);
+        const revData = monthlyData.map(row => row.revenue);
+
+        new Chart(revCtx, {
+            type: 'line',
+            data: {
+                labels: revLabels.length > 0 ? revLabels : ['Sense dades'],
+                datasets: [{
+                    label: 'Ingressos (€)',
+                    data: revData.length > 0 ? revData : [0],
+                    borderColor: '#3a69ff',
+                    backgroundColor: 'rgba(58, 105, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3 // Adds a nice curve to the line
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // --- CATEGORY DOUGHNUT CHART ---
+        const catCtx = document.getElementById('categoryChart').getContext('2d');
+        
+        // Securely pass the Python data into JavaScript as a JSON string
+        const catDataArray = JSON.parse('{{ category_data | tojson | safe }}');
+        
+        // Use standard JavaScript to create the arrays
+        const catLabels = catDataArray.map(row => row.categories);
+        const catData = catDataArray.map(row => row.total_items);
+
+        new Chart(catCtx, {
+            type: 'doughnut',
+            data: {
+                labels: catLabels.length > 0 ? catLabels : ['Sense dades'],
+                datasets: [{
+                    data: catData.length > 0 ? catData : [1],
+                    // A sleek color palette for the different categories
+                    backgroundColor: ['#3a69ff', '#16a34a', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+    </script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
