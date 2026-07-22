@@ -11,7 +11,7 @@
         .main-content {
             overflow-y: auto;
             height: 100vh;
-        }
+    }
 
         .lookup-wrapper {
             max-width: 800px;
@@ -174,7 +174,6 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
     lucide.createIcons();
-
     const searchBtn = document.getElementById('search-btn');
     const symptomInput = document.getElementById('symptom-input');
     const resultsSection = document.getElementById('results-section');
@@ -182,10 +181,67 @@
     const resultsTitle = document.getElementById('results-title');
     const loading = document.getElementById('loading');
 
+    let allResults = [];
+    let currentPage = 0;
+    const PAGE_SIZE = 12;
+
     searchBtn.addEventListener('click', doSearch);
     symptomInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') doSearch();
     });
+
+    function createCard(med) {
+        const card = document.createElement('div');
+        card.className = 'med-card';
+        card.style.cursor = 'pointer';
+        card.innerHTML = `
+            <h4>${med.nombre}</h4>
+            <p><strong>Nº Registre:</strong> ${med.nregistro}</p>
+            <div class="lab">${med.labtitular || 'Laboratori desconegut'}</div>
+        `;
+        card.addEventListener('click', function() {
+            window.open(`https://www.google.com/search?q=${encodeURIComponent(med.nombre + ' medicamento')}`, '_blank');
+        });
+        return card;
+    }
+
+    function loadMore() {
+        const start = currentPage * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+        const batch = allResults.slice(start, end);
+
+        batch.forEach(med => {
+            resultsGrid.appendChild(createCard(med));
+        });
+
+        currentPage++;
+
+        // Remove old load more button if exists
+        const oldBtn = document.getElementById('load-more-btn');
+        if (oldBtn) oldBtn.remove();
+
+        // Add load more button if there are more results
+        if (currentPage * PAGE_SIZE < allResults.length) {
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.id = 'load-more-btn';
+            loadMoreBtn.textContent = `Carregar més (${allResults.length - currentPage * PAGE_SIZE} restants)`;
+            loadMoreBtn.style.cssText = `
+                display: block;
+                margin: 20px auto;
+                padding: 12px 28px;
+                background: #2b6cb0;
+                color: white;
+                border: none;
+                border-radius: 25px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                font-family: 'Poppins', sans-serif;
+            `;
+            loadMoreBtn.addEventListener('click', loadMore);
+            resultsSection.appendChild(loadMoreBtn);
+        }
+    }
 
     async function doSearch() {
         const symptom = symptomInput.value.trim();
@@ -195,6 +251,12 @@
         resultsSection.style.display = 'none';
         loading.style.display = 'block';
         resultsGrid.innerHTML = '';
+        allResults = [];
+        currentPage = 0;
+
+        // Remove old load more button if exists
+        const oldBtn = document.getElementById('load-more-btn');
+        if (oldBtn) oldBtn.remove();
 
         try {
             const formData = new FormData();
@@ -209,21 +271,10 @@
             loading.style.display = 'none';
 
             if (data.resultados && data.resultados.length > 0) {
-                const top = data.resultados.slice(0, 12);
-                resultsTitle.textContent = `${top.length} medicaments trobats per "${symptom}"`;
-                
-                top.forEach(med => {
-                    const card = document.createElement('div');
-                    card.className = 'med-card';
-                    card.innerHTML = `
-                        <h4>${med.nombre}</h4>
-                        <p><strong>Nº Registre:</strong> ${med.nregistro}</p>
-                        <div class="lab">${med.labtitular || 'Laboratori desconegut'}</div>
-                    `;
-                    resultsGrid.appendChild(card);
-                });
-
+                allResults = data.resultados;
+                resultsTitle.textContent = `${allResults.length} medicaments trobats per "${symptom}"`;
                 resultsSection.style.display = 'block';
+                loadMore();
             } else {
                 resultsTitle.textContent = `No s'han trobat medicaments per "${symptom}"`;
                 resultsGrid.innerHTML = '<div class="empty-state"><p>Prova amb un altre terme de cerca.</p></div>';
