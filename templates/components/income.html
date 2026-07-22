@@ -3,18 +3,9 @@
 <head>
     <title>Ingressos</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/income.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .income-page { padding: 40px; width: 100%; }
-        .stats-card { background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; gap: 40px; }
-        .stat-item h3 { margin: 0; color: gray; font-size: 14px; font-weight: 500; }
-        .stat-item p { margin: 5px 0 0; font-size: 28px; font-weight: 700; color: #16a34a; }
-        
-        .income-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .income-table th, .income-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        .income-table th { background-color: #f8f9fa; font-weight: 600; }
-    </style>
 </head>
 <body>
     {% include 'components/sidebar.html' %}
@@ -22,16 +13,34 @@
       {% include 'components/header.html' %}
       
       <div class="income-page">
-        <h2>Resum d'Ingressos</h2>
+        
+        <!-- Header & Monthly Filter UI -->
+        <div class="filter-container">
+            <h2 style="margin: 0;">Resum d'Ingressos</h2>
+            
+            <form method="GET" action="{{ url_for('income') }}" style="display: flex; gap: 10px;">
+                <!-- Automatically submits when a date is selected -->
+                <input type="month" name="month" class="month-picker" 
+                       value="{{ selected_month if selected_month else '' }}" 
+                       onchange="this.form.submit()">
+                       
+                <!-- Show 'Clear' button only if a month is actively selected -->
+                {% if selected_month %}
+                <a href="{{ url_for('income') }}" class="btn-clear">
+                    <i data-lucide="x" style="width: 16px;"></i> Tot el temps
+                </a>
+                {% endif %}
+            </form>
+        </div>
         
         <!-- Summary Cards -->
         <div class="stats-card">
             <div class="stat-item">
-                <h3>Ingressos Totals</h3>
+                <h3>{% if selected_month %}Ingressos del Mes{% else %}Ingressos Totals{% endif %}</h3>
                 <p>EUR {{ stats.total_revenue if stats.total_revenue else '0.00' }}</p>
             </div>
             <div class="stat-item">
-                <h3>Transaccions Totals</h3>
+                <h3>{% if selected_month %}Transaccions del Mes{% else %}Transaccions Totals{% endif %}</h3>
                 <p style="color: #3b82f6;">{{ stats.total_sales if stats.total_sales else '0' }}</p>
             </div>
         </div>
@@ -58,7 +67,13 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" style="text-align: center; padding: 30px; color: gray;">Encara no hi ha registres d'ingressos.</td>
+                    <td colspan="4" style="text-align: center; padding: 30px; color: gray;">
+                        {% if selected_month %}
+                            Cap transacció registrada aquest mes.
+                        {% else %}
+                            Encara no hi ha registres d'ingressos.
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

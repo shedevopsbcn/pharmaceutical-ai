@@ -3,21 +3,9 @@
 <head>
     <title>Suppliers</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/supplier.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .provider-page { padding: 40px; width: 100%; }
-        .provider-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .provider-table th, .provider-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        .provider-table th { background-color: #f8f9fa; font-weight: 600; }
-        .provider-table tr:hover { background-color: #f8f9fa; }
-        
-        .badge { background: #e0e7ff; color: #3b82f6; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-right: 10px; display: inline-block;}
-        .badge-green { background: #dcfce7; color: #16a34a; }
-        
-        .btn-view { background: #3a69ff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500; transition: 0.2s;}
-        .btn-view:hover { background: #284ee0; }
-    </style>
 </head>
 <body>
     {% include 'components/sidebar.html' %}
@@ -44,7 +32,6 @@
                         <span class="badge">Diferents Medicaments: {{ p.unique_products }}</span>
                     </td>
                     <td>
-                        <!-- Points to our new dedicated profile page -->
                         <a href="{{ url_for('supplier_detail', supplier_name=p.proveedor) }}" class="btn-view">Veure Perfil</a>
                     </td>
                 </tr>

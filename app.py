@@ -323,16 +323,41 @@ def income():
         
     cur = mysql.connection.cursor()
     
-    # 1. Calculate total revenue and total sales count
-    cur.execute("SELECT SUM(preu) as total_revenue, COUNT(id) as total_sales FROM transactions")
-    stats = cur.fetchone()
+    # Check if a specific month was requested from the dropdown
+    selected_month = request.args.get('month')
     
-    # 2. Pull all transaction records for the detailed list
-    cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
-    transactions = cur.fetchall()
+    try:
+        if selected_month:
+            # Split 'YYYY-MM' into Year and Month variables
+            year, month = selected_month.split('-')
+            
+            # Filter stats for that specific month
+            cur.execute("SELECT SUM(preu) as total_revenue, COUNT(id) as total_sales FROM transactions WHERE YEAR(data_compra) = %s AND MONTH(data_compra) = %s", (year, month))
+            stats = cur.fetchone()
+            
+            # Filter list for that specific month
+            cur.execute("SELECT * FROM transactions WHERE YEAR(data_compra) = %s AND MONTH(data_compra) = %s ORDER BY data_compra DESC", (year, month))
+            transactions = cur.fetchall()
+            
+        else:
+            # If no month is selected, show ALL-TIME totals
+            cur.execute("SELECT SUM(preu) as total_revenue, COUNT(id) as total_sales FROM transactions")
+            stats = cur.fetchone()
+            
+            cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
+            transactions = cur.fetchall()
+            
+    except Exception as e:
+        # Failsafe: if something breaks, just load all-time data
+        cur.execute("SELECT SUM(preu) as total_revenue, COUNT(id) as total_sales FROM transactions")
+        stats = cur.fetchone()
+        cur.execute("SELECT * FROM transactions ORDER BY data_compra DESC")
+        transactions = cur.fetchall()
+        selected_month = None
+        
     cur.close()
     
-    return render_template('components/income.html', active_page='income', stats=stats, transactions=transactions)
+    return render_template('components/income.html', active_page='income', stats=stats, transactions=transactions, selected_month=selected_month)
 
 @app.route('/inbox')
 def inbox():

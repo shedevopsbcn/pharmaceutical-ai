@@ -3,17 +3,10 @@
 <head>
     <title>Perfil del Supplier</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Now pointing to the combined supplier.css file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/supplier.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .profile-page { padding: 40px; width: 100%; }
-        .contact-card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .back-link { color: #3a69ff; text-decoration: none; font-weight: 500; margin-bottom: 20px; display: inline-block; }
-        
-        .catalog-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .catalog-table th, .catalog-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        .catalog-table th { background-color: #f8f9fa; }
-    </style>
 </head>
 <body>
     {% include 'components/sidebar.html' %}
