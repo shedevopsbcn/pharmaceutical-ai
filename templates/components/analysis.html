@@ -21,9 +21,9 @@
                 </div>
                 
                 <div class="charts-grid">
-                    <!-- Line Chart: Monthly Revenue -->
+                    <!-- Line Chart: Monthly Revenue & Expenses -->
                     <div class="chart-card">
-                        <h3>Monthly Income (Last 6 months)</h3>
+                        <h3>Monthly Income & Expenses (Last 6 months)</h3>
                         <canvas id="revenueChart"></canvas>
                     </div>
 
@@ -41,29 +41,41 @@
 
     <!-- Chart Setup Scripts -->
     <script>
-        // --- REVENUE LINE CHART ---
+        // --- REVENUE & EXPENSES LINE CHART ---
         const revCtx = document.getElementById('revenueChart').getContext('2d');
         
         // Securely pass the Python data into JavaScript as a JSON string
         const monthlyData = JSON.parse('{{ monthly_revenue | tojson | safe }}');
         
-        // Use standard JavaScript to create the arrays (no more red lines!)
+        // Use standard JavaScript to create the arrays
         const revLabels = monthlyData.map(row => row.month);
         const revData = monthlyData.map(row => row.revenue);
+        const expData = monthlyData.map(row => row.expenses);
 
         new Chart(revCtx, {
             type: 'line',
             data: {
                 labels: revLabels.length > 0 ? revLabels : ['Sense dades'],
-                datasets: [{
-                    label: 'Ingressos (€)',
-                    data: revData.length > 0 ? revData : [0],
-                    borderColor: '#3a69ff',
-                    backgroundColor: 'rgba(58, 105, 255, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3 // Adds a nice curve to the line
-                }]
+                datasets: [
+                    {
+                        label: 'Ingressos (€)',
+                        data: revData.length > 0 ? revData : [0],
+                        borderColor: '#3a69ff',
+                        backgroundColor: 'rgba(58, 105, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Despeses (€)',
+                        data: expData.length > 0 ? expData : [0],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
             },
             options: { responsive: true }
         });

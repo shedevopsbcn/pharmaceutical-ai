@@ -205,15 +205,20 @@ def submit_product():
         quantitat = request.form['quantitat']
         milligrams = request.form['milligrams']
         preu = request.form['preu']
+        preu_compra = request.form['preu_compra'] # <-- NEW COST FIELD ADDED
         caducitat = request.form['caducitat']
         proveedor = request.form['proveedor']
         category = request.form.get('category') 
 
         cur = mysql.connection.cursor()
+        
+        # <-- UPDATED SQL QUERY to include preu_compra and extra %s
         query = """INSERT INTO productes 
-                   (id, nom, quantitat, miligrams, preu, data_caducitat, proveedor, categories) 
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-        values = (id_numero, nom_producte, quantitat, milligrams, preu, caducitat, proveedor, category)
+                   (id, nom, quantitat, miligrams, preu, preu_compra, data_caducitat, proveedor, categories) 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                   
+        # <-- UPDATED VALUES to pass the new variable           
+        values = (id_numero, nom_producte, quantitat, milligrams, preu, preu_compra, caducitat, proveedor, category)
 
         try:
             cur.execute(query, values)
@@ -395,6 +400,7 @@ def analysis():
 
     cur = mysql.connection.cursor()
 
+    # 1. Get total inventory grouped by category for the Doughnut Chart
     cur.execute("""
         SELECT categories, SUM(quantitat) as total_items 
         FROM productes 
@@ -402,9 +408,11 @@ def analysis():
     """)
     category_data = cur.fetchall()
 
-    # FIX: Changed %%Y-%%m to %Y-%m so it formats correctly!
+    # 2. Get revenue and calculate expenses (65% of revenue) for the Line Chart
     cur.execute("""
-        SELECT DATE_FORMAT(data_compra, '%Y-%m') as month, SUM(preu) as revenue 
+        SELECT DATE_FORMAT(data_compra, '%Y-%m') as month, 
+               SUM(preu) as revenue,
+               SUM(preu) * 0.65 as expenses
         FROM transactions 
         GROUP BY month 
         ORDER BY month DESC 
