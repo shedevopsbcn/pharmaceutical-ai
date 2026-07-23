@@ -56,6 +56,14 @@
               Ingressos
             </a>
         </li>
+
+        <!-- RESTORED TRANSACTIONS LINK -->
+        <li class="sidebar-list-item {% if active_page == 'transaction' %}active{% endif %}">
+            <a href="{{ url_for('transaction') }}">
+              <i data-lucide="receipt"></i>
+              Transactions
+            </a>
+        </li>
         
         <li class="sidebar-list-item {% if active_page == 'promotion' %}active{% endif %}">
             <a href="{{ url_for('promotion') }}">
